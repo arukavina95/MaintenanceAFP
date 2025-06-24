@@ -1,0 +1,153 @@
+/* Professional styles for react-calendar */
+
+/* Hide numbers for days outside current month */
+.react-calendar__month-view__days__day--neighboringMonth .react-calendar__tile__abbr {
+  visibility: hidden;
+  height: 0;
+  overflow: hidden;
+}
+
+/* Style for days outside current month (gray background for entire tile) */
+.adjacent-month-day {
+  background-color: #e9ecef !important; /* Light gray background */
+  pointer-events: none; /* Disable clicking on these days if not desired */
+}
+
+/* Generic event style (e.g., for day 16 in the image) */
+.day-has-event {
+  background-color: #f0f0f0 !important; /* Very light gray for events */
+  border: none !important; /* No border for event days */
+}
+
+/* Style for selected day (e.g., day 11 in the image) */
+.react-calendar__tile--active {
+  background-color: #bb1e0f !important; /* Solid new hex color for selected day */
+  color: white !important; /* White text for selected day */
+}
+
+/* Weekday header styling */
+.react-calendar__month-view__weekdays {
+  background-color: #bb1e0f; /* New hex color for header background */
+  border-bottom: 1px solid #bb1e0f; /* New hex color for border */
+}
+
+.react-calendar__month-view__weekdays__weekday {
+  padding: 0.95em 0 !important;
+  font-weight: 900 !important;
+  color: #FFFFFF !important; /* White text for weekdays */
+  text-align: center;
+  font-size: 0.99em;
+}
+
+/* Restore and style react-calendar navigation buttons */
+.react-calendar__navigation {
+  display: flex !important; /* Re-enable navigation */
+  height: auto !important;
+  margin-bottom: 10px; /* Add some space below */
+}
+
+.react-calendar__navigation button {
+  color: #bb1e0f !important; /* New hex color for arrows */
+  font-weight: bold !important;
+  font-size: 1.5em !important; /* Make arrows larger */
+  background: none !important;
+  border: none !important;
+  padding: 0 10px !important;
+}
+
+.react-calendar__navigation__label {
+  flex-grow: 1; /* Allow label to take available space */
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.1em;
+  color: #424242; /* Darker color for month/year label */
+}
+
+/* Calendar tile styling */
+.react-calendar__tile {
+  min-height: 80px; /* Adjust as needed for event display */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start; /* Align date numbers to top-left */
+  padding: 5px; /* Adjust padding for numbers to be visible */
+  position: relative;
+  border: 2px solid #e0e0e0; /* Consistent border for tiles */
+  background-color: #f8f8f8; /* Very light subtle gray/beige background for general days */
+}
+
+/* Ensure general current month tile text is black */
+.react-calendar__tile:not(.react-calendar__month-view__days__day--neighboringMonth):not(.react-calendar__tile--active):not(.react-calendar__month-view__days__day--weekend) {
+    color: #000000 !important; /* Set color for the tile itself to ensure date number inheritance */
+}
+
+/* Day number styling */
+.react-calendar__tile__abbr {
+  font-size: 0.9em;
+  font-weight: 500;
+  color: #000000 !important; /* Solid black for general day numbers in current month */
+  position: absolute;
+  top: 5px;
+  left: 5px;
+}
+
+/* Specific rule for non-active, non-weekend dates in current month */
+.react-calendar__tile:not(.react-calendar__tile--active):not(.react-calendar__month-view__days__day--weekend) .react-calendar__tile__abbr {
+    color: #000000 !important; /* Ensure these specific dates are black */
+}
+
+/* Event content styling */
+.event-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Align event text to the left */
+  margin-top: 2px; /* Move event content down to not overlap day number */
+  width: 100%;
+  padding-left: 2px;
+}
+
+.event-content-wrapper span {
+  font-size: 0.85em;
+  text-align: left;
+  color: black;
+  line-height: 1.4;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+/* Calendar container styling */
+.react-calendar {
+  width: 100% !important;
+  max-width: none !important;
+  border: 1px solid #cccccc; /* Subtle gray border */
+  border-radius: 8px;
+  box-shadow: none; /* No box-shadow */
+  background-color: #ffffff;
+}
+
+/* Weekend day styling */
+.react-calendar__month-view__days__day--weekend {
+  color: #bb1e0f !important; /* Specific RGB color for weekend numbers */
+}
+
+/* Today styling */
+.react-calendar__tile--now {
+  background-color: #e0e0e0 !important; /* Light gray background for today */
+  border: 1px solid #c0c0c0 !important; /* Subtle gray border */
+}
+
+/* Weekend day styling */
+.react-calendar__month-view__days__day--weekend .react-calendar__tile__abbr {
+  color: #bb1e0f !important; /* Specific RGB color for weekend numbers */
+}
+
+/* Style for selected day (e.g., day 17 in the image) */
+.react-calendar__tile--active .react-calendar__tile__abbr {
+  color: white !important; /* White text for selected day */
+}
+
+/* Ensure dates in event tiles are black by default, unless overridden by active state */
+.day-has-event .react-calendar__tile__abbr {
+    color: #000000 !important;
+}
+

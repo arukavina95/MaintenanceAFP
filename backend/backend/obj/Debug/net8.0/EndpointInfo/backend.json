@@ -1,0 +1,260 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "backend",
+    "version": "1.0"
+  },
+  "paths": {
+    "/api/Korisnici": {
+      "get": {
+        "tags": [
+          "Korisnici"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Korisnici"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Korisnici"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Korisnici"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Korisnici"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Korisnici"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Korisnici"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Korisnici"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Korisnici"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Korisnici"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Korisnici"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Korisnici/{id}": {
+      "get": {
+        "tags": [
+          "Korisnici"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Korisnici"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Korisnici"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Korisnici"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Korisnici"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Korisnici"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Korisnici"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Korisnici"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Korisnici"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Korisnici": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "korisnik": {
+            "type": "string",
+            "nullable": true
+          },
+          "ime": {
+            "type": "string",
+            "nullable": true
+          },
+          "lozinka": {
+            "type": "string",
+            "nullable": true
+          },
+          "brojKartice": {
+            "type": "string",
+            "nullable": true
+          },
+          "potpis": {
+            "type": "string",
+            "nullable": true
+          },
+          "odjel": {
+            "type": "string",
+            "nullable": true
+          },
+          "aktivan": {
+            "type": "boolean"
+          },
+          "razinaPristupa": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "datumRodenja": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "zaposlenOd": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "ukupnoDanaGo": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "ukupnoDanaStarogGo": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

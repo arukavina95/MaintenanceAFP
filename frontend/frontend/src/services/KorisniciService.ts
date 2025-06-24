@@ -1,0 +1,77 @@
+import axios from 'axios';
+import authService from './authService';
+
+const API_URL = 'http://localhost:5008/api';
+
+axios.interceptors.request.use(
+  (config) => {
+    const token = authService.getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+export interface User {
+  id: number;
+  korisnik: string;
+  ime: string;
+  razinaPristupa: number;
+  aktivan: boolean;
+  brojKartice: string;
+  potpis: string;
+  odjel: string;
+  datumRodenja: string;
+  zaposlenOd: string;
+  ukupnoDanaGo: number;
+  ukupnoDanaStarogGo: number;
+  lozinkaHash?: string;
+  lozinkaSalt?: string;
+}
+
+class UserService {
+  async getUsers(): Promise<User[]> {
+    try {
+      const response = await axios.get(`${API_URL}/Korisnici`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      throw error;
+    }
+  }
+
+  async createUser(user: Omit<User, 'id'>): Promise<User> {
+    try {
+      const response = await axios.post(`${API_URL}/Korisnici`, user);
+      return response.data;
+    } catch (error) {
+      console.error("Error creating user:", error);
+      throw error;
+    }
+  }
+
+  async updateUser(id: number, user: User): Promise<User> {
+    try {
+      const response = await axios.put(`${API_URL}/Korisnici/${id}`, user);
+      return response.data;
+    } catch (error) {
+      console.error(`Error updating user with id ${id}:`, error);
+      throw error;
+    }
+  }
+
+  async deleteUser(id: number): Promise<void> {
+    try {
+      await axios.delete(`${API_URL}/Korisnici/${id}`);
+    } catch (error) {
+      console.error(`Error deleting user with id ${id}:`, error);
+      throw error;
+    }
+  }
+}
+
+export default new UserService(); 

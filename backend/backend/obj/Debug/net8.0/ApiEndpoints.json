@@ -1,0 +1,111 @@
+[
+  {
+    "ContainingType": "QCS_WebAPI.Controllers.KorisniciController",
+    "Method": "GetKorisnici",
+    "RelativePath": "api/Korisnici",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[backend.Models.Korisnici, backend, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "QCS_WebAPI.Controllers.KorisniciController",
+    "Method": "PostKorisnici",
+    "RelativePath": "api/Korisnici",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "korisnici",
+        "Type": "backend.Models.Korisnici",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "backend.Models.Korisnici",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "QCS_WebAPI.Controllers.KorisniciController",
+    "Method": "GetKorisnik",
+    "RelativePath": "api/Korisnici/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "backend.Models.Korisnici",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "QCS_WebAPI.Controllers.KorisniciController",
+    "Method": "PutKorisnici",
+    "RelativePath": "api/Korisnici/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "korisnici",
+        "Type": "backend.Models.Korisnici",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "QCS_WebAPI.Controllers.KorisniciController",
+    "Method": "DeleteKorisnici",
+    "RelativePath": "api/Korisnici/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]
