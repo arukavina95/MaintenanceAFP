@@ -4,9 +4,6 @@
     {
         public int Id { get; set; }
         public string Korisnik { get; set; }
-        // Uklonite originalno polje Lozinka (string)
-        // public string Lozinka { get; set; } // OVO SE UKLANJA ILI KOMENTIRA
-
         public byte[] LozinkaHash { get; set; } // NOVO POLJE
         public byte[] LozinkaSalt { get; set; } // NOVO POLJE
 

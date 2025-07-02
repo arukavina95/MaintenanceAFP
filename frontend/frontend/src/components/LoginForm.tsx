@@ -8,7 +8,7 @@ import authService from '../services/authService';
 import { AxiosError } from 'axios';
 
 interface LoginFormProps {
-  onLogin: (username: string) => void;
+  onLogin: (user: any) => void;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
@@ -32,7 +32,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
 
     try {
       const response = await authService.login({ username, password });
-      onLogin(response.user.korisnik);
+      onLogin(response.user);
     } catch (err: unknown) {
       if (err instanceof AxiosError) {
         setError(err.response?.data?.message || 'Pogrešno korisničko ime ili lozinka!');

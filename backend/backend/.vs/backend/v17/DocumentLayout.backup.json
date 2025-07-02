@@ -3,100 +3,35 @@
   "WorkspaceRootPath": "C:\\Users\\antun\\source\\repos\\MAINTENANCE APPLICATION\\backend\\backend\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{1DD9C425-2718-4638-98AB-67E5BA77986D}|backend.csproj|c:\\users\\antun\\source\\repos\\maintenance application\\backend\\backend\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1DD9C425-2718-4638-98AB-67E5BA77986D}|backend.csproj|solutionrelative:controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{1DD9C425-2718-4638-98AB-67E5BA77986D}|backend.csproj|c:\\users\\antun\\source\\repos\\maintenance application\\backend\\backend\\controllers\\planiranjecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1DD9C425-2718-4638-98AB-67E5BA77986D}|backend.csproj|solutionrelative:controllers\\planiranjecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{1DD9C425-2718-4638-98AB-67E5BA77986D}|backend.csproj|c:\\users\\antun\\source\\repos\\maintenance application\\backend\\backend\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{1DD9C425-2718-4638-98AB-67E5BA77986D}|backend.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1DD9C425-2718-4638-98AB-67E5BA77986D}|backend.csproj|c:\\users\\antun\\source\\repos\\maintenance application\\backend\\backend\\models\\planiranje.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1DD9C425-2718-4638-98AB-67E5BA77986D}|backend.csproj|solutionrelative:models\\planiranje.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{1DD9C425-2718-4638-98AB-67E5BA77986D}|backend.csproj|c:\\users\\antun\\source\\repos\\maintenance application\\backend\\backend\\dtos\\planiranjelistdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1DD9C425-2718-4638-98AB-67E5BA77986D}|backend.csproj|solutionrelative:dtos\\planiranjelistdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{1DD9C425-2718-4638-98AB-67E5BA77986D}|backend.csproj|c:\\users\\antun\\source\\repos\\maintenance application\\backend\\backend\\dtos\\planiranjedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1DD9C425-2718-4638-98AB-67E5BA77986D}|backend.csproj|solutionrelative:dtos\\planiranjedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1DD9C425-2718-4638-98AB-67E5BA77986D}|backend.csproj|c:\\users\\antun\\source\\repos\\maintenance application\\backend\\backend\\dtos\\kalendardto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1DD9C425-2718-4638-98AB-67E5BA77986D}|backend.csproj|solutionrelative:dtos\\kalendardto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1DD9C425-2718-4638-98AB-67E5BA77986D}|backend.csproj|c:\\users\\antun\\source\\repos\\maintenance application\\backend\\backend\\models\\planiranje.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1DD9C425-2718-4638-98AB-67E5BA77986D}|backend.csproj|solutionrelative:models\\planiranje.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
     {
-      "Orientation": 1,
+      "Orientation": 0,
       "VerticalTabListWidth": 256,
       "DocumentGroups": [
         {
-          "DockedHeight": 200,
-          "SelectedChildIndex": 0,
+          "DockedWidth": 263,
+          "SelectedChildIndex": 6,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "AuthController.cs",
-              "DocumentMoniker": "C:\\Users\\antun\\source\\repos\\MAINTENANCE APPLICATION\\backend\\backend\\Controllers\\AuthController.cs",
-              "RelativeDocumentMoniker": "Controllers\\AuthController.cs",
-              "ToolTip": "C:\\Users\\antun\\source\\repos\\MAINTENANCE APPLICATION\\backend\\backend\\Controllers\\AuthController.cs",
-              "RelativeToolTip": "Controllers\\AuthController.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAAACUAAAAsAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-23T13:28:48.606Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "C:\\Users\\antun\\source\\repos\\MAINTENANCE APPLICATION\\backend\\backend\\appsettings.json",
-              "RelativeDocumentMoniker": "appsettings.json",
-              "ToolTip": "C:\\Users\\antun\\source\\repos\\MAINTENANCE APPLICATION\\backend\\backend\\appsettings.json",
-              "RelativeToolTip": "appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAABKAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-06-23T13:28:24.789Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Planiranje.cs",
-              "DocumentMoniker": "C:\\Users\\antun\\source\\repos\\MAINTENANCE APPLICATION\\backend\\backend\\Models\\Planiranje.cs",
-              "RelativeDocumentMoniker": "Models\\Planiranje.cs",
-              "ToolTip": "C:\\Users\\antun\\source\\repos\\MAINTENANCE APPLICATION\\backend\\backend\\Models\\Planiranje.cs",
-              "RelativeToolTip": "Models\\Planiranje.cs",
-              "ViewState": "AgIAAAUAAAAAAAAAAAAQwB0AAAAZAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-16T09:14:48.556Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "PlaniranjeDto.cs",
-              "DocumentMoniker": "C:\\Users\\antun\\source\\repos\\MAINTENANCE APPLICATION\\backend\\backend\\DTOs\\PlaniranjeDto.cs",
-              "RelativeDocumentMoniker": "DTOs\\PlaniranjeDto.cs",
-              "ToolTip": "C:\\Users\\antun\\source\\repos\\MAINTENANCE APPLICATION\\backend\\backend\\DTOs\\PlaniranjeDto.cs",
-              "RelativeToolTip": "DTOs\\PlaniranjeDto.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwBcAAAAbAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-16T09:13:18.422Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "PlaniranjeController.cs",
-              "DocumentMoniker": "C:\\Users\\antun\\source\\repos\\MAINTENANCE APPLICATION\\backend\\backend\\Controllers\\PlaniranjeController.cs",
-              "RelativeDocumentMoniker": "Controllers\\PlaniranjeController.cs",
-              "ToolTip": "C:\\Users\\antun\\source\\repos\\MAINTENANCE APPLICATION\\backend\\backend\\Controllers\\PlaniranjeController.cs",
-              "RelativeToolTip": "Controllers\\PlaniranjeController.cs",
-              "ViewState": "AgIAABUAAAAAAAAAAAA5wE0AAAAXAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-16T09:08:45.798Z",
-              "EditorCaption": ""
-            },
             {
               "$type": "Bookmark",
               "Name": "ST:130:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
@@ -108,6 +43,79 @@
             {
               "$type": "Bookmark",
               "Name": "ST:129:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{40ea2e6b-2121-4bb8-a43e-c83c04b51041}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Planiranje.cs",
+              "DocumentMoniker": "C:\\Users\\antun\\source\\repos\\MAINTENANCE APPLICATION\\backend\\backend\\Models\\Planiranje.cs",
+              "RelativeDocumentMoniker": "Models\\Planiranje.cs",
+              "ToolTip": "C:\\Users\\antun\\source\\repos\\MAINTENANCE APPLICATION\\backend\\backend\\Models\\Planiranje.cs",
+              "RelativeToolTip": "Models\\Planiranje.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAB4AAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-01T09:30:23.339Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "PlaniranjeController.cs",
+              "DocumentMoniker": "C:\\Users\\antun\\source\\repos\\MAINTENANCE APPLICATION\\backend\\backend\\Controllers\\PlaniranjeController.cs",
+              "RelativeDocumentMoniker": "Controllers\\PlaniranjeController.cs",
+              "ToolTip": "C:\\Users\\antun\\source\\repos\\MAINTENANCE APPLICATION\\backend\\backend\\Controllers\\PlaniranjeController.cs",
+              "RelativeToolTip": "Controllers\\PlaniranjeController.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAewCsAAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-01T09:28:48.542Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "PlaniranjeListDto.cs",
+              "DocumentMoniker": "C:\\Users\\antun\\source\\repos\\MAINTENANCE APPLICATION\\backend\\backend\\DTOs\\PlaniranjeListDto.cs",
+              "RelativeDocumentMoniker": "DTOs\\PlaniranjeListDto.cs",
+              "ToolTip": "C:\\Users\\antun\\source\\repos\\MAINTENANCE APPLICATION\\backend\\backend\\DTOs\\PlaniranjeListDto.cs",
+              "RelativeToolTip": "DTOs\\PlaniranjeListDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwA8AAABVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-01T09:28:13.216Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "PlaniranjeDto.cs",
+              "DocumentMoniker": "C:\\Users\\antun\\source\\repos\\MAINTENANCE APPLICATION\\backend\\backend\\DTOs\\PlaniranjeDto.cs",
+              "RelativeDocumentMoniker": "DTOs\\PlaniranjeDto.cs",
+              "ToolTip": "C:\\Users\\antun\\source\\repos\\MAINTENANCE APPLICATION\\backend\\backend\\DTOs\\PlaniranjeDto.cs",
+              "RelativeToolTip": "DTOs\\PlaniranjeDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwBUAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-01T09:28:11.24Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "KalendarDto.cs",
+              "DocumentMoniker": "C:\\Users\\antun\\source\\repos\\MAINTENANCE APPLICATION\\backend\\backend\\DTOs\\KalendarDto.cs",
+              "RelativeDocumentMoniker": "DTOs\\KalendarDto.cs",
+              "ToolTip": "C:\\Users\\antun\\source\\repos\\MAINTENANCE APPLICATION\\backend\\backend\\DTOs\\KalendarDto.cs",
+              "RelativeToolTip": "DTOs\\KalendarDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-01T09:28:02.24Z",
+              "EditorCaption": ""
             }
           ]
         }

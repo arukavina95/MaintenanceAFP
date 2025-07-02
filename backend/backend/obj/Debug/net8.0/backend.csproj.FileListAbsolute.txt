@@ -155,6 +155,7 @@ C:\Users\antun\source\repos\MAINTENANCE APPLICATION\backend\backend\obj\Debug\ne
 C:\Users\antun\source\repos\MAINTENANCE APPLICATION\backend\backend\obj\Debug\net8.0\backend.csproj.CoreCompileInputs.cache
 C:\Users\antun\source\repos\MAINTENANCE APPLICATION\backend\backend\obj\Debug\net8.0\backend.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\antun\source\repos\MAINTENANCE APPLICATION\backend\backend\obj\Debug\net8.0\backend.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\antun\source\repos\MAINTENANCE APPLICATION\backend\backend\obj\Debug\net8.0\backend.sourcelink.json
 C:\Users\antun\source\repos\MAINTENANCE APPLICATION\backend\backend\obj\Debug\net8.0\scopedcss\bundle\backend.styles.css
 C:\Users\antun\source\repos\MAINTENANCE APPLICATION\backend\backend\obj\Debug\net8.0\staticwebassets.build.json
 C:\Users\antun\source\repos\MAINTENANCE APPLICATION\backend\backend\obj\Debug\net8.0\staticwebassets.build.json.cache

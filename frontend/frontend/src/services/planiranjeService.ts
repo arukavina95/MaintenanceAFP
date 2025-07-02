@@ -13,19 +13,27 @@ export interface PlaniranjeTask {
   pocetniDatum: string;
   zavrsniDatum: string;
   strojId: number | null;
+  strojNaslov: string;
   smjena: string;
   opis: string;
   privitak: File | null;
   status: string;
+  djelatnik: string;
+  korisnikIme?: string;
 }
 
-export const getMachines = async (): Promise<Machine[]> => {
-  const response = await axios.get<Machine[]>(`${API_URL}/Strojevi`);
+export const getMachineTitles = async (): Promise<string[]> => {
+  const response = await axios.get<string[]>(`${API_URL}/StrojeviNaslovi`);
   return response.data;
 };
 
 export const getPlaniranjeTasks = async (): Promise<PlaniranjeTask[]> => {
   const response = await axios.get<PlaniranjeTask[]>(API_URL);
+  return response.data;
+};
+
+export const getMachines = async (): Promise<Machine[]> => {
+  const response = await axios.get<Machine[]>('http://localhost:5008/api/Strojevi');
   return response.data;
 };
 

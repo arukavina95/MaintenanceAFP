@@ -14,8 +14,10 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { format } from 'date-fns';
-import type { Machine, PlaniranjeTask } from '../services/planiranjeService';
+import type { PlaniranjeTask } from '../services/planiranjeService';
 import { getMachines } from '../services/planiranjeService';
+import type { Machine } from '../services/planiranjeService';
+import authService from '../services/authService';
 
 interface PlaniranjeFormModalProps {
   open: boolean;
@@ -36,30 +38,33 @@ export const PlaniranjeFormModal: React.FC<PlaniranjeFormModalProps> = ({
   const [opis, setOpis] = useState<string>('');
   const [pocetniDatum, setPocetniDatum] = useState<Date | null>(null);
   const [zavrsniDatum, setZavrsniDatum] = useState<Date | null>(null);
-  const [stroj, setStroj] = useState<string>('');
+  const [strojevi, setStrojevi] = useState<Machine[]>([]);
+  const [selectedMachineId, setSelectedMachineId] = useState<number | null>(null);
+  const [strojNaslov, setStrojNaslov] = useState<string>('');
   const [smjena, setSmjena] = useState<string>('Prva');
   const [status, setStatus] = useState<string>('U tijeku');
   const [privitak, setPrivitak] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [strojevi, setStrojevi] = useState<Machine[]>([]);
 
   useEffect(() => {
-    const fetchMachines = async () => {
-      try {
-        const data = await getMachines();
-        setStrojevi(data);
-      } catch (error) {
+    getMachines()
+      .then((machines) => {
+        setStrojevi(machines);
+        if (initialData) {
+          const found = machines.find(m => m.naslov === initialData.strojNaslov);
+          setSelectedMachineId(found ? found.id : null);
+        }
+      })
+      .catch((error) => {
         console.error('Error fetching machines:', error);
-      }
-    };
-    fetchMachines();
+      });
 
     if (initialData) {
       setVrstaZadataka(initialData.vrstaZadataka);
       setOpis(initialData.opis);
       setPocetniDatum(initialData.pocetniDatum ? new Date(initialData.pocetniDatum) : null);
       setZavrsniDatum(initialData.zavrsniDatum ? new Date(initialData.zavrsniDatum) : null);
-      setStroj(initialData.strojId?.toString() || '');
+      setStrojNaslov(initialData.strojNaslov || '');
       setSmjena(initialData.smjena);
       setStatus(initialData.status);
     } else {
@@ -67,7 +72,8 @@ export const PlaniranjeFormModal: React.FC<PlaniranjeFormModalProps> = ({
       setOpis('');
       setPocetniDatum(null);
       setZavrsniDatum(null);
-      setStroj('');
+      setStrojNaslov('');
+      setSelectedMachineId(null);
       setSmjena('Prva');
       setStatus('U tijeku');
       setPrivitak(null);
@@ -95,8 +101,8 @@ export const PlaniranjeFormModal: React.FC<PlaniranjeFormModalProps> = ({
       tempErrors.zavrsniDatum = 'Završni datum je obavezan.';
       isValid = false;
     }
-    if (!stroj) {
-      tempErrors.stroj = 'Stroj je obavezan.';
+    if (!selectedMachineId) {
+      tempErrors.strojNaslov = 'Stroj je obavezan.';
       isValid = false;
     }
     if (!smjena) {
@@ -117,14 +123,9 @@ export const PlaniranjeFormModal: React.FC<PlaniranjeFormModalProps> = ({
 
   const handleSave = async () => {
     if (validate()) {
-      const parsedStrojId = stroj ? parseInt(stroj, 10) : null;
-      if (parsedStrojId === null || isNaN(parsedStrojId)) {
-        setErrors(prev => ({ ...prev, stroj: 'Stroj je obavezan i mora biti broj.' }));
-        return;
-      }
-
       const formattedPocetniDatum = pocetniDatum ? format(pocetniDatum, 'yyyy-MM-dd') : '';
       const formattedZavrsniDatum = zavrsniDatum ? format(zavrsniDatum, 'yyyy-MM-dd') : '';
+      const user = authService.getCurrentUser();
 
       const newTask: PlaniranjeTask = {
         id: initialData?.id || 0,
@@ -132,10 +133,12 @@ export const PlaniranjeFormModal: React.FC<PlaniranjeFormModalProps> = ({
         opis,
         pocetniDatum: formattedPocetniDatum,
         zavrsniDatum: formattedZavrsniDatum,
-        strojId: parsedStrojId,
+        strojId: selectedMachineId,
+        strojNaslov: strojevi.find(m => m.id === selectedMachineId)?.naslov || '',
         smjena,
         privitak,
-        status
+        status,
+        djelatnik: user?.korisnik,
       };
       onSave(newTask);
       onClose();
@@ -169,16 +172,19 @@ export const PlaniranjeFormModal: React.FC<PlaniranjeFormModalProps> = ({
               <TextField
                 select
                 label="Stroj"
-                value={stroj}
-                onChange={e => setStroj(e.target.value)}
+                value={selectedMachineId ?? ''}
+                onChange={e => {
+                  const id = Number(e.target.value);
+                  setSelectedMachineId(id);
+                  const machine = strojevi.find(m => m.id === id);
+                  setStrojNaslov(machine ? machine.naslov : '');
+                }}
                 fullWidth
-                error={!!errors.stroj}
-                helperText={errors.stroj}
+                error={!!errors.strojNaslov}
+                helperText={errors.strojNaslov}
               >
                 {strojevi.map(machine => (
-                  <MenuItem key={machine.id} value={machine.id.toString()}>
-                    {machine.naslov}
-                  </MenuItem>
+                  <MenuItem key={machine.id} value={machine.id}>{machine.naslov}</MenuItem>
                 ))}
               </TextField>
             </Grid>

@@ -44,9 +44,10 @@ class UserService {
     }
   }
 
-  async createUser(user: Omit<User, 'id'>): Promise<User> {
+  async createUser(user: any): Promise<User> {
     try {
-      const response = await axios.post(`${API_URL}/Korisnici`, user);
+      // KORISTI AUTH/REGISTER ENDPOINT!
+      const response = await axios.post(`${API_URL}/Auth/register`, user);
       return response.data;
     } catch (error) {
       console.error("Error creating user:", error);
@@ -69,6 +70,15 @@ class UserService {
       await axios.delete(`${API_URL}/Korisnici/${id}`);
     } catch (error) {
       console.error(`Error deleting user with id ${id}:`, error);
+      throw error;
+    }
+  }
+
+  async changeUserPassword(id: number, novaLozinka: string): Promise<void> {
+    try {
+      await axios.put(`${API_URL}/Korisnici/${id}/PromjenaLozinke`, { novaLozinka });
+    } catch (error) {
+      console.error(`Error changing password for user with id ${id}:`, error);
       throw error;
     }
   }

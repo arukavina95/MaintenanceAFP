@@ -1,4 +1,5 @@
-﻿using backend.Models;
+﻿using backend.DTOs;
+using backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -152,7 +153,21 @@ namespace QCS_WebAPI.Controllers // Prilagodite namespaceu vašeg projekta
             return (_context.Korisnici?.Any(e => e.Id == id)).GetValueOrDefault();
         }
 
+        //Promjena lozinke 
+        [HttpPut("{id}/PromjenaLozinke")]
+        public async Task<IActionResult> ChangePassword(int id, [FromBody] PromjenaLozinkeDto dto)
+        {
+            var korisnik = await _context.Korisnici.FindAsync(id);
+            if (korisnik == null)
+                return NotFound();
 
-     
+            using var hmac = new System.Security.Cryptography.HMACSHA512();
+            korisnik.LozinkaHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(dto.NovaLozinka));
+            korisnik.LozinkaSalt = hmac.Key;
+
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
     }
 }

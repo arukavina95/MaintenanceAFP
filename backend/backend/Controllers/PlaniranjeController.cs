@@ -1,7 +1,9 @@
-﻿using backend.Models;
+﻿using backend.DTOs;
+using backend.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace backend.Controllers
@@ -17,25 +19,47 @@ namespace backend.Controllers
             _context = context;
         }
 
-        // GET: api/Planiranje/Strojevi
-        [HttpGet("Strojevi")]
-        public async Task<ActionResult<IEnumerable<Strojevi>>> GetStrojevi()
+        [HttpGet("StrojeviNaslovi")]
+        public async Task<ActionResult<IEnumerable<string>>> GetStrojeviNaslovi()
         {
-            return await _context.Strojevi.ToListAsync();
+            var naslovi = await _context.Strojevi.Select(s => s.Naslov).ToListAsync();
+            return Ok(naslovi);
         }
 
-        // GET: api/Planiranje
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Planiranje>>> GetPlaniranja()
+        public async Task<ActionResult<IEnumerable<PlaniranjeListDto>>> GetPlaniranja()
         {
-            return await _context.Planiranja.Include(p => p.Stroj).ToListAsync();
+            var planiranja = await _context.Planiranja
+                .Include(p => p.Stroj)
+                .Include(p => p.Korisnik)
+                .Select(p => new PlaniranjeListDto
+                {
+                    Id = p.Id,
+                    VrstaZadataka = p.VrstaZadataka,
+                    PocetniDatum = p.PocetniDatum,
+                    ZavrsniDatum = p.ZavrsniDatum,
+                    StrojId = p.StrojId,
+                    StrojNaslov = p.Stroj.Naslov,
+                    Smjena = p.Smjena,
+                    Opis = p.Opis,
+                    Status = p.Status,
+                    KorisnikId = p.KorisnikId,
+                    KorisnikIme = p.Korisnik.Ime
+                })
+                .ToListAsync();
+
+            return Ok(planiranja);
         }
 
-        // POST: api/Planiranje
         [HttpPost]
         [Consumes("multipart/form-data")]
         public async Task<ActionResult> PostPlaniranje([FromForm] PlaniranjeDto dto)
         {
+            // Dohvati ID korisnika iz JWT tokena
+            var korisnikIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(korisnikIdString, out var korisnikId))
+                return Unauthorized("Neispravan korisnički token.");
+
             var plan = new Planiranje
             {
                 VrstaZadataka = dto.VrstaZadataka,
@@ -44,15 +68,24 @@ namespace backend.Controllers
                 StrojId = dto.StrojId,
                 Smjena = dto.Smjena,
                 Opis = dto.Opis,
-                Status = dto.Status
-               
+                Status = dto.Status,
+                KorisnikId = korisnikId // automatski iz tokena!
             };
 
             if (dto.Privitak != null && dto.Privitak.Length > 0)
             {
-                using var ms = new MemoryStream();
-                await dto.Privitak.CopyToAsync(ms);
-                plan.Privitak = ms.ToArray();
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                Directory.CreateDirectory(uploadsFolder);
+
+                var uniqueFileName = $"{Guid.NewGuid()}_{dto.Privitak.FileName}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await dto.Privitak.CopyToAsync(stream);
+                }
+
+                plan.PrivitakPath = $"/uploads/{uniqueFileName}";
             }
 
             _context.Planiranja.Add(plan);
@@ -69,6 +102,11 @@ namespace backend.Controllers
             if (plan == null)
                 return NotFound($"Planiranje s ID-om {id} nije pronađeno.");
 
+            // Dohvati ID korisnika iz JWT tokena
+            var korisnikIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(korisnikIdString, out var korisnikId))
+                return Unauthorized("Neispravan korisnički token.");
+
             plan.VrstaZadataka = dto.VrstaZadataka;
             plan.PocetniDatum = dto.PocetniDatum;
             plan.ZavrsniDatum = dto.ZavrsniDatum;
@@ -76,12 +114,22 @@ namespace backend.Controllers
             plan.Smjena = dto.Smjena;
             plan.Opis = dto.Opis;
             plan.Status = dto.Status;
+            plan.KorisnikId = korisnikId; // automatski iz tokena!
 
             if (dto.Privitak != null && dto.Privitak.Length > 0)
             {
-                using var ms = new MemoryStream();
-                await dto.Privitak.CopyToAsync(ms);
-                plan.Privitak = ms.ToArray();
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                Directory.CreateDirectory(uploadsFolder);
+
+                var uniqueFileName = $"{Guid.NewGuid()}_{dto.Privitak.FileName}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await dto.Privitak.CopyToAsync(stream);
+                }
+
+                plan.PrivitakPath = $"/uploads/{uniqueFileName}";
             }
 
             _context.Entry(plan).State = EntityState.Modified;
@@ -101,7 +149,6 @@ namespace backend.Controllers
             return NoContent();
         }
 
-        // DELETE: api/Planiranje/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePlaniranje(int id)
         {

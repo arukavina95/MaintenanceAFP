@@ -22,6 +22,39 @@ namespace backend.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Kalendar", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("KorisnikId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("PocetniDatum")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PrivitakNaziv")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PrivitakPath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RazlogIzostanka")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ZavrsniDatum")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KorisnikId");
+
+                    b.ToTable("Kalendari");
+                });
+
             modelBuilder.Entity("Planiranje", b =>
                 {
                     b.Property<int>("Id")
@@ -30,14 +63,17 @@ namespace backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("KorisnikId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Opis")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("PocetniDatum")
                         .HasColumnType("datetime2");
 
-                    b.Property<byte[]>("Privitak")
-                        .HasColumnType("varbinary(max)");
+                    b.Property<string>("PrivitakPath")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Smjena")
                         .IsRequired()
@@ -57,6 +93,8 @@ namespace backend.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("KorisnikId");
 
                     b.HasIndex("StrojId");
 
@@ -383,13 +421,32 @@ namespace backend.Migrations
                     b.ToTable("ZaOdjel", (string)null);
                 });
 
+            modelBuilder.Entity("Kalendar", b =>
+                {
+                    b.HasOne("backend.Models.Korisnici", "Korisnik")
+                        .WithMany()
+                        .HasForeignKey("KorisnikId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Korisnik");
+                });
+
             modelBuilder.Entity("Planiranje", b =>
                 {
+                    b.HasOne("backend.Models.Korisnici", "Korisnik")
+                        .WithMany()
+                        .HasForeignKey("KorisnikId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("backend.Models.Strojevi", "Stroj")
                         .WithMany()
                         .HasForeignKey("StrojId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Korisnik");
 
                     b.Navigation("Stroj");
                 });

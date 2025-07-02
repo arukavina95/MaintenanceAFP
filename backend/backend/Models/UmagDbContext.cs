@@ -31,6 +31,8 @@ public partial class UmagDbContext : DbContext
 
     public virtual DbSet<Planiranje> Planiranja { get; set; }
 
+    public virtual DbSet<Kalendar> Kalendari { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)   
         => optionsBuilder.UseSqlServer("Server=Rukavina\\SQLEXPRESS;Database=UMAG_db;User Id=antun;Password=antun;TrustServerCertificate=True");
 

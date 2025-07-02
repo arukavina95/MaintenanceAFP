@@ -40,13 +40,13 @@ namespace backend.Services
             {
                 Korisnik = registerDto.Username,
                 Ime = registerDto.Ime,
-                LozinkaHash = passwordHash, // Dodat ćete ova polja u Korisnici model
-                LozinkaSalt = passwordSalt, // Dodat ćete ova polja u Korisnici model
+                LozinkaHash = passwordHash, 
+                LozinkaSalt = passwordSalt,
                 BrojKartice = registerDto.BrojKartice,
                 Potpis = registerDto.Potpis,
                 Odjel = registerDto.Odjel,
                 Aktivan = registerDto.Aktivan,
-                RazinaPristupa = registerDto.RazinaPristupa ?? 2, // Default na Korisnik (2)
+                RazinaPristupa = registerDto.RazinaPristupa ?? 2, 
                 DatumRodenja = registerDto.DatumRodenja,
                 ZaposlenOd = registerDto.ZaposlenOd,
                 UkupnoDanaGo = registerDto.UkupnoDanaGo,

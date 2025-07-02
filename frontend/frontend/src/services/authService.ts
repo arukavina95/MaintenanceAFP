@@ -33,15 +33,20 @@ class AuthService {
   getCurrentUser() {
     const userStr = localStorage.getItem('user');
     if (userStr) {
-      const user = JSON.parse(userStr);
-      return { ...user, username: user.user.korisnik };
+      const userObj = JSON.parse(userStr);
+      // Return the inner user object directly
+      return userObj.user || userObj;
     }
     return null;
   }
 
   getToken() {
-    const user = this.getCurrentUser();
-    return user?.token;
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      const userObj = JSON.parse(userStr);
+      return userObj.token;
+    }
+    return null;
   }
 }
 

@@ -1,23 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Button, Card, CircularProgress, Alert, Dialog, DialogContent, IconButton } from '@mui/material';
+import { Box, Typography, Button, Card, CircularProgress, Alert, Dialog, DialogContent, IconButton, Chip } from '@mui/material';
 import Header from '../components/Header';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import StopIcon from '@mui/icons-material/Stop';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import DescriptionIcon from '@mui/icons-material/Description';
-import MovieCreationIcon from '@mui/icons-material/MovieCreation';
 import CloseIcon from '@mui/icons-material/Close';
-import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ObavijestiService, { type Obavijest } from '../services/ObavijestiService';
 
 
 interface ObavijestiPageProps {
   username: string;
+  razinaPristupa: number;
   onLogout: () => void;
 }
 
-const ObavijestiPage: React.FC<ObavijestiPageProps> = ({ username, onLogout }) => {
+const ObavijestiPage: React.FC<ObavijestiPageProps> = ({ username, razinaPristupa, onLogout }) => {
   const [news, setNews] = useState<Obavijest[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
@@ -79,276 +78,157 @@ const ObavijestiPage: React.FC<ObavijestiPageProps> = ({ username, onLogout }) =
 
   return (
     <>
-      <Header username={username} onLogout={onLogout} />
+      <Header username={username} razinaPristupa={razinaPristupa} onLogout={onLogout} />
       <Box
         sx={{
           display: 'flex',
           flexDirection: 'column',
-          height: 'calc(100vh - 64px)', // Fixed height to fill remaining viewport
-          bgcolor: '#f5f5f5', // Changed background color to a light gray
-          alignItems: 'center', // Center content horizontally
-          justifyContent: 'flex-start', // Align content to the top within the available space
-          overflowY: 'auto', // Allow vertical scrolling if content overflows
+          alignItems: 'center',
+          minHeight: '100vh',
+          bgcolor: '#f7f9fa',
+          pt: 4,
+          px: 2,
         }}
       >
         <Box
           sx={{
-            p: 3, // Increased padding
-            background: '#fff',
-            maxWidth: '960px', // Increased max-width
             width: '100%',
-            boxSizing: 'border-box', // Include padding in width calculation
-            borderRadius: '8px', // Added border radius
-            mt: 3, // Added margin-top
-            mb: 3, // Added margin-bottom
+            maxWidth: 1200,
+            bgcolor: '#fff',
+            borderRadius: 3,
+            boxShadow: '0 2px 16px rgba(0,0,0,0.07)',
+            p: { xs: 2, sm: 4 },
+            mb: 4,
           }}
         >
-            <Typography variant="h4" color="error" fontWeight="bold" gutterBottom sx={{ mb: 2, textAlign: 'center' }}>
-             VIJESTI
-            </Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', mb: 2, pr: 2 }}>
-              <Box sx={{ flexGrow: 1 }} />
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>
-                {obavijest ? new Date(obavijest.datumObjave).toLocaleDateString() : ''}
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
-                <Button
-                  variant="outlined"
-                  onClick={handlePokreni}
-                  sx={{
-                    borderColor: '#4caf50',
-                    color: '#4caf50',
-                    '&:hover': { bgcolor: 'rgba(76, 175, 80, 0.1)' },
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    textTransform: 'none',
-                    px: 1.5,
-                    py: 1,
-                    minWidth: 'unset',
-                    gap: 0.5,
-                  }}
-                >
-                  <PlayArrowIcon />
-                  POKRENI
-                </Button>
-                <Button
-                  variant="outlined"
-                  onClick={handleZaustavi}
-                  sx={{
-                    borderColor: '#f44336',
-                    color: '#f44336',
-                    '&:hover': { bgcolor: 'rgba(244, 67, 54, 0.1)' },
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    textTransform: 'none',
-                    px: 1.5,
-                    py: 1,
-                    minWidth: 'unset',
-                    gap: 0.5,
-                  }}
-                >
-                  <StopIcon />
-                  ZAUSTAVI
-                </Button>
-                <Button
-                  variant="outlined"
-                  onClick={handlePrethodna}
-                  sx={{
-                    borderColor: '#2196f3',
-                    color: '#2196f3',
-                    '&:hover': { bgcolor: 'rgba(33, 150, 243, 0.1)' },
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    textTransform: 'none',
-                    px: 1.5,
-                    py: 1,
-                    minWidth: 'unset',
-                    gap: 0.5,
-                  }}
-                >
-                  <ArrowBackIosNewIcon sx={{ fontSize: '1rem' }} />
-                  PREDHODNA
-                </Button>
-                <Button
-                  variant="outlined"
-                  onClick={handleSljedeca}
-                  sx={{
-                    borderColor: '#2196f3',
-                    color: '#2196f3',
-                    '&:hover': { bgcolor: 'rgba(33, 150, 243, 0.1)' },
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    textTransform: 'none',
-                    px: 1.5,
-                    py: 1,
-                    minWidth: 'unset',
-                    gap: 0.5,
-                  }}
-                >
-                  <ArrowForwardIosIcon sx={{ fontSize: '1rem' }} />
-                  SLJEDEĆA
-                </Button>
-                <Button
-                  variant="contained"
-                  sx={{
-                    bgcolor: '#9e9e9e',
-                    '&:hover': { bgcolor: '#757575' },
-                    color: '#fff',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: 0.5,
-                    px: 2,
-                    py: 1,
-                    borderRadius: 1,
-                    textTransform: 'none',
-                    fontSize: '1rem',
-                    border: '1px solid #757575',
-                  }}
-                >
-                  <DescriptionIcon />
-                  DOKUMENTI
-                </Button>
-              </Box>
-            </Box>
+          <Chip label="Vijesti" color="error" sx={{ mb: 2, fontWeight: 700, fontSize: 16, letterSpacing: 1 }} />
 
-            {loading && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
-                <CircularProgress />
-              </Box>
-            )}
-
-            {error && !loading && (
-              <Alert severity="error" sx={{ mt: 2, mb: 2 }}>{error}</Alert>
-            )}
-
-            {!loading && !error && news.length > 0 && obavijest && (
-              <Card elevation={3} sx={{ p: 3, mb: 2, border: '1px solid #e0e0e0', borderRadius: '8px' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h5" fontWeight="bold" gutterBottom>
-                    <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', mr: 1 }}><MovieCreationIcon sx={{ color: 'grey.700' }} /></Box>{obavijest.imeObavijesti}
-                  </Typography>
-                </Box>
-                
-                {obavijest.slika && (
-                  <Box sx={{ position: 'relative', width: '100%', mb: 2 }}>
-                    <Box
-                      component="img"
-                      src={`data:image/jpeg;base64,${obavijest.slika}`}
-                      alt="Slika obavijesti"
-                      onClick={handleImageClick}
-                      sx={{
-                        width: '100%',
-                        height: '650px',
-                        objectFit: 'contain',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        display: 'block',
-                        margin: 'auto',
-                        '&:hover': {
-                          opacity: 0.9,
-                        },
-                      }}
-                    />
-                    <IconButton
-                      onClick={handleImageClick}
-                      sx={{
-                        position: 'absolute',
-                        bottom: 8,
-                        right: 8,
-                        bgcolor: 'rgba(255, 255, 255, 0.8)',
-                        '&:hover': {
-                          bgcolor: 'rgba(255, 255, 255, 0.9)',
-                        },
-                      }}
-                    >
-                      <ZoomInIcon />
-                    </IconButton>
-                  </Box>
-                )}
-
-                <Typography variant="body1" sx={{ mb: 2, lineHeight: 1.6, whiteSpace: 'pre-line' }}>
-                  {obavijest.opis}
-                </Typography>
-
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 1 }}>
-                  <Typography variant="body1" fontWeight="bold">
-                    {/* Podnaslov iz baze ako ga imate */}
-                  </Typography>
-                  <Typography variant="subtitle2" color="text.secondary">
-                    Datum objave: {new Date(obavijest.datumObjave).toLocaleDateString('hr-HR', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric'
-                    })}
-                  </Typography>
-                </Box>
-                
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                  {/* Uklonjen SharePoint gumb */}
-                </Box>
-              </Card>
-            )}
-            
-            {!loading && !error && news.length === 0 && (
-              <Typography variant="h6" color="text.secondary" sx={{ mt: 4, textAlign: 'center' }}>
-                Trenutno nema aktivnih obavijesti.
-              </Typography>
-            )}
-
+          <Box sx={{ display: 'flex', gap: 1, mb: 2, justifyContent: 'center' }}>
+            <IconButton onClick={handlePokreni} color={isRunning ? "success" : "default"}>
+              <PlayArrowIcon />
+            </IconButton>
+            <IconButton onClick={handleZaustavi} color={!isRunning ? "error" : "default"}>
+              <StopIcon />
+            </IconButton>
+            <IconButton onClick={handlePrethodna}>
+              <ArrowBackIosNewIcon />
+            </IconButton>
+            <IconButton onClick={handleSljedeca}>
+              <ArrowForwardIosIcon />
+            </IconButton>
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<DescriptionIcon />}
+              sx={{ ml: 2, borderRadius: 2, fontWeight: 600 }}
+            >
+              Dokumenti
+            </Button>
           </Box>
-      </Box>
 
-      {/* Image Modal */}
-      <Dialog
-        open={isImageModalOpen}
-        onClose={handleCloseImageModal}
-        maxWidth="lg"
-        fullWidth
-        PaperProps={{
-          sx: {
-            bgcolor: 'transparent',
-            boxShadow: 'none',
-            maxHeight: '90vh',
-          },
-        }}
-      >
-        <DialogContent sx={{ p: 0, position: 'relative' }}>
-          <IconButton
-            onClick={handleCloseImageModal}
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-              bgcolor: 'rgba(255, 255, 255, 0.8)',
-              '&:hover': {
-                bgcolor: 'rgba(255, 255, 255, 0.9)',
-              },
-              zIndex: 1,
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-          {obavijest?.slika && (
-            <Box
-              component="img"
-              src={`data:image/jpeg;base64,${obavijest.slika}`}
-              alt="Slika obavijesti"
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+              <CircularProgress />
+            </Box>
+          ) : error ? (
+            <Alert severity="error">{error}</Alert>
+          ) : obavijest ? (
+            <Card
               sx={{
-                width: '100%',
-                height: 'auto',
-                maxHeight: '90vh',
-                objectFit: 'contain',
-                display: 'block',
+                maxWidth: 700,
+                mx: 'auto',
+                borderRadius: 4,
+                boxShadow: '0 4px 32px rgba(0,0,0,0.10)',
+                overflow: 'hidden',
+                transition: 'box-shadow 0.2s',
+                '&:hover': { boxShadow: '0 8px 40px rgba(0,0,0,0.18)' },
+                bgcolor: 'background.paper',
+                animation: 'fadein 0.7s',
+                '@keyframes fadein': {
+                  from: { opacity: 0 },
+                  to: { opacity: 1 }
+                }
               }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+            >
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 2, pt: 2, pr: 3 }}>
+                <Typography variant="body2" color="text.secondary">
+                  {new Date(obavijest.datumObjave).toLocaleDateString('hr-HR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                </Typography>
+                {(() => {
+                  const now = new Date();
+                  const datum = new Date(obavijest.datumObjave);
+                  const diff = (now.getTime() - datum.getTime()) / (1000 * 60 * 60 * 24);
+                  if (diff <= 2) {
+                    return (
+                      <Chip label="Nova obavijest" color="error" size="small" sx={{ fontWeight: 700, fontSize: 13, letterSpacing: 1 }} />
+                    );
+                  }
+                  return null;
+                })()}
+              </Box>
+              <Box sx={{ p: 3, pb: 0 }}>
+                <Typography variant="h4" fontWeight={500} sx={{ mb: 2 }}>
+                  {obavijest.imeObavijesti}
+                </Typography>
+              </Box>
+              {obavijest.slika && (
+                <Box sx={{ position: 'relative' }}>
+                  <Box
+                    component="img"
+                    src={`data:image/jpeg;base64,${obavijest.slika}`}
+                    alt="Slika obavijesti"
+                    sx={{
+                      width: '70%',
+                      aspectRatio: 'auto',
+                      objectFit: 'cover',
+                      display: 'block',
+                      borderTopLeftRadius: 16,
+                      borderTopRightRadius: 16,
+                      cursor: 'pointer',
+                      mx:'auto'
+                    }}
+                    onClick={handleImageClick}
+                  />
+                </Box>
+              )}
+              <Box
+                sx={{
+                  maxHeight: 500,
+                  overflowY: 'auto',
+                  bgcolor: '#fff',
+                  borderRadius: 1,
+                  p: 2,
+                  border: '1px solid #eee',
+                }}
+                dangerouslySetInnerHTML={{ __html: obavijest.opis }}
+              />
+              {/* Modal za uvećanje slike */}
+              <Dialog open={isImageModalOpen} onClose={handleCloseImageModal} maxWidth="md">
+                <DialogContent sx={{ p: 0, bgcolor: '#222' }}>
+                  <IconButton
+                    onClick={handleCloseImageModal}
+                    sx={{ position: 'absolute', top: 8, right: 8, color: '#fff', zIndex: 2 }}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                  <Box
+                    component="img"
+                    src={`data:image/jpeg;base64,${obavijest.slika}`}
+                    alt="Slika obavijesti uvećana"
+                    sx={{
+                      display: 'block',
+                      maxWidth: '90vw',
+                      maxHeight: '80vh',
+                      margin: 'auto',
+                      borderRadius: 2,
+                    }}
+                  />
+                </DialogContent>
+              </Dialog>
+            </Card>
+          ) : null}
+        </Box>
+      </Box>
     </>
   );
 };
