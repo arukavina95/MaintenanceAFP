@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace QCS_WebAPI.Controllers // Prilagodite namespaceu vašeg projekta
 {
-    [Authorize(Roles = "Administrator")]
     [ApiController]
     [Route("api/[controller]")]
     public class KorisniciController : ControllerBase // Nasljeđuje ControllerBase za API kontrolere
@@ -110,6 +109,7 @@ namespace QCS_WebAPI.Controllers // Prilagodite namespaceu vašeg projekta
 
         // DELETE: api/Korisnici/5
         // Briše korisnika po ID-u
+        // DELETE: api/Korisnici/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteKorisnici(int id)
         {
@@ -118,18 +118,27 @@ namespace QCS_WebAPI.Controllers // Prilagodite namespaceu vašeg projekta
                 return NotFound(); // Vraća 404 Not Found ako tablica nije dostupna
             }
 
-            // Pronalazi korisnika za brisanje
             var korisnici = await _context.Korisnici.FindAsync(id);
             if (korisnici == null)
             {
                 return NotFound(); // Vraća 404 Not Found ako korisnik ne postoji
             }
 
-            // Uklanja korisnika iz konteksta
-            _context.Korisnici.Remove(korisnici);
-            await _context.SaveChangesAsync(); // Sprema promjene (briše korisnika)
-
-            return NoContent(); // Vraća 204 No Content za uspješno brisanje
+            try
+            {
+                _context.Korisnici.Remove(korisnici);
+                await _context.SaveChangesAsync(); // Sprema promjene (briše korisnika)
+                return NoContent(); // Vraća 204 No Content za uspješno brisanje
+            }
+            catch (DbUpdateException)
+            {
+                // Najčešći uzrok: korisnik je referenciran u drugim tablicama (FK constraint)
+                return BadRequest("Korisnik se ne može obrisati jer je povezan s drugim zapisima.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Greška na serveru: {ex.Message}");
+            }
         }
 
 

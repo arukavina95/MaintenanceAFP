@@ -1,6 +1,17 @@
 import axios from 'axios';
+import authService from './authService';
 
 const API_URL = 'http://localhost:5008/api/Kalendar';
+
+// Axios interceptor za automatsko dodavanje Authorization headera
+axios.interceptors.request.use((config) => {
+  const token = authService.getToken();
+  if (token) {
+    config.headers = config.headers || {};
+    config.headers['Authorization'] = `Bearer ${token}`;
+  }
+  return config;
+});
 
 export interface Izostanak {
     id: number;

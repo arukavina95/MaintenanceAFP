@@ -7,6 +7,10 @@ export interface LoginCredentials {
   password: string;
 }
 
+export interface RfidLoginRequest {
+  brojKartice: string;
+}
+
 export interface AuthResponse {
   token: string;
   user: {
@@ -24,6 +28,29 @@ class AuthService {
       localStorage.setItem('user', JSON.stringify(response.data));
     }
     return response.data;
+  }
+
+  async rfidLogin(brojKartice: string): Promise<AuthResponse> {
+    console.log('Sending RFID login request with brojKartice:', brojKartice);
+    console.log('Full URL:', `${API_URL}/auth/rfid-login`);
+    
+    try {
+      const response = await axios.post(`${API_URL}/auth/rfid-login`, { brojKartice });
+      console.log('Backend response:', response.data);
+      
+      if (response.data.token && response.data.user?.korisnik) {
+        localStorage.setItem('user', JSON.stringify(response.data));
+        console.log('Stored RFID user data:', response.data);
+      } else {
+        console.warn('Backend response missing token or user data:', response.data);
+      }
+      return response.data;
+    } catch (error: any) {
+      console.error('Full error details:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      throw error;
+    }
   }
 
   logout() {

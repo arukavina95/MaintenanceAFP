@@ -167,3 +167,7 @@ C:\Users\antun\source\repos\MAINTENANCE APPLICATION\backend\backend\obj\Debug\ne
 C:\Users\antun\source\repos\MAINTENANCE APPLICATION\backend\backend\obj\Debug\net8.0\backend.pdb
 C:\Users\antun\source\repos\MAINTENANCE APPLICATION\backend\backend\obj\Debug\net8.0\backend.genruntimeconfig.cache
 C:\Users\antun\source\repos\MAINTENANCE APPLICATION\backend\backend\obj\Debug\net8.0\ref\backend.dll
+C:\Users\antun\source\repos\MAINTENANCE APPLICATION\backend\backend\obj\Debug\net8.0\rpswa.dswa.cache.json
+C:\Users\antun\source\repos\MAINTENANCE APPLICATION\backend\backend\obj\Debug\net8.0\rjimswa.dswa.cache.json
+C:\Users\antun\source\repos\MAINTENANCE APPLICATION\backend\backend\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
+C:\Users\antun\source\repos\MAINTENANCE APPLICATION\backend\backend\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json

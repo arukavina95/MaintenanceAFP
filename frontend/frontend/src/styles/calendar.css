@@ -21,14 +21,14 @@
 
 /* Style for selected day (e.g., day 11 in the image) */
 .react-calendar__tile--active {
-  background-color: #bb1e0f !important; /* Solid new hex color for selected day */
+  background-color: #ba1e0f !important; /* Primary color for selected day */
   color: white !important; /* White text for selected day */
 }
 
 /* Weekday header styling */
 .react-calendar__month-view__weekdays {
-  background-color: #bb1e0f; /* New hex color for header background */
-  border-bottom: 1px solid #bb1e0f; /* New hex color for border */
+  background-color: #ba1e0f; /* Primary color for header background */
+  border-bottom: 1px solid #ba1e0f; /* Primary color for border */
 }
 
 .react-calendar__month-view__weekdays__weekday {
@@ -47,7 +47,7 @@
 }
 
 .react-calendar__navigation button {
-  color: #bb1e0f !important; /* New hex color for arrows */
+  color: #ba1e0f !important; /* Primary color for arrows */
   font-weight: bold !important;
   font-size: 1.5em !important; /* Make arrows larger */
   background: none !important;
@@ -127,7 +127,7 @@
 
 /* Weekend day styling */
 .react-calendar__month-view__days__day--weekend {
-  color: #bb1e0f !important; /* Specific RGB color for weekend numbers */
+  color: #64748b !important; /* Secondary color for weekend numbers */
 }
 
 /* Today styling */
@@ -138,7 +138,7 @@
 
 /* Weekend day styling */
 .react-calendar__month-view__days__day--weekend .react-calendar__tile__abbr {
-  color: #bb1e0f !important; /* Specific RGB color for weekend numbers */
+  color: #64748b !important; /* Secondary color for weekend numbers */
 }
 
 /* Style for selected day (e.g., day 17 in the image) */

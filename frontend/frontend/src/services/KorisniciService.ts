@@ -67,9 +67,19 @@ class UserService {
 
   async deleteUser(id: number): Promise<void> {
     try {
-      await axios.delete(`${API_URL}/Korisnici/${id}`);
-    } catch (error) {
+      console.log(`Attempting to delete user with id: ${id}`);
+      const response = await axios.delete(`${API_URL}/Korisnici/${id}`);
+      console.log('Delete response:', response);
+    } catch (error: any) {
       console.error(`Error deleting user with id ${id}:`, error);
+      if (error.response) {
+        console.error('Response status:', error.response.status);
+        console.error('Response data:', error.response.data);
+        console.error('Response headers:', error.response.headers);
+      }
+      if (error.request) {
+        console.error('Request was made but no response received:', error.request);
+      }
       throw error;
     }
   }

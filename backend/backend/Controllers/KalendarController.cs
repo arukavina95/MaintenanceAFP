@@ -164,7 +164,7 @@ namespace backend.Controllers
         [AllowAnonymous]
         public ActionResult<IEnumerable<string>> GetRazloziIzostanka()
         {
-            return Enum.GetNames(typeof(RazlogIzostanka));
+            return Enum.GetNames(typeof(RazlogIzostankaEnum));
         }
     }
 }

@@ -5,8 +5,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-
-
 app.post('/api/chat', async (req, res) => {
   console.log('Pozvan /api/chat endpoint', req.body);
   const TOGETHER_API_KEY = 'tgp_v1_bgSrsQnbxVKTYnyTDcY4x0V20OCacGe-ZENfIZKgvsI'; // zamijeni sa svojim Together API ključem

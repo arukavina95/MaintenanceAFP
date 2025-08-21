@@ -113,7 +113,7 @@ namespace backend.Services
         }
 
         // Metoda za generiranje JWT tokena
-        private string CreateToken(Korisnici user)
+        public string CreateToken(Korisnici user)
         {
             var claims = new List<Claim>
             {

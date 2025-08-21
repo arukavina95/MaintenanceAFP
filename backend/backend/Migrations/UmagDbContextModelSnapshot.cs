@@ -101,6 +101,169 @@ namespace backend.Migrations
                     b.ToTable("Planiranja");
                 });
 
+            modelBuilder.Entity("RadniNalog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BrojRN")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DatumPrijave")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DatumVrijemeDodjele")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DatumVrijemePreuzimanja")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DatumZatvaranja")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DodijeljenoId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NacinRjesavanja")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Napomena")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Naslov")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Obrazlozenje")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("OdjelPrijaveId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OdradioId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("OpisKvara")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("OtklonitiDo")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Potpis")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PrivitakPath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RDIFOPrema")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double?>("SatiRada")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StrojId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StupanjHitnosti")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TehnoloskaOznaka")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UstanovioId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UtrosenoMaterijala")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("VrstaNaloga")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ZaOdjel")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DodijeljenoId");
+
+                    b.HasIndex("OdjelPrijaveId");
+
+                    b.HasIndex("OdradioId");
+
+                    b.HasIndex("StrojId");
+
+                    b.HasIndex("UstanovioId");
+
+                    b.ToTable("RadniNalozi");
+                });
+
+            modelBuilder.Entity("backend.Models.Izvodaci", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Broj")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Izvodac")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Kontakt")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MjestoRada")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OdgovornaOsoba")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OpisRada")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("PocetniDatum")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Privitak")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TipRadova")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Zastoj")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("ZavrsniDatum")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Izvodaci");
+                });
+
             modelBuilder.Entity("backend.Models.Korisnici", b =>
                 {
                     b.Property<int>("Id")
@@ -222,110 +385,19 @@ namespace backend.Migrations
                     b.ToTable("OdjelPrijave", (string)null);
                 });
 
-            modelBuilder.Entity("backend.Models.PrijavaKvarova", b =>
+            modelBuilder.Entity("backend.Models.RadniNalogSudionik", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("ID");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("BrojRn")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("BrojRN");
-
-                    b.Property<string>("BrojTehnoloskaOznaka")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<DateOnly>("DatumPrijave")
-                        .HasColumnType("date");
-
-                    b.Property<DateTime?>("DatumVrijemeDodjele")
-                        .HasColumnType("datetime");
-
-                    b.Property<DateTime?>("DatumVrijemePreuzimanja")
-                        .HasColumnType("datetime");
-
-                    b.Property<DateOnly?>("DatumZatvaranja")
-                        .HasColumnType("date");
-
-                    b.Property<string>("DodijeljenoDjelatniku")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("NacinRjesavanja")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Napomena")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Naslov")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("ObrazlozenjePp")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("ObrazlozenjePP");
-
-                    b.Property<string>("OdjelPrijave")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<int?>("OdradioSatiRada")
+                    b.Property<int>("RadniNalogId")
                         .HasColumnType("int");
 
-                    b.Property<string>("OpisKvara")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("KorisnikId")
+                        .HasColumnType("int");
 
-                    b.Property<DateOnly?>("OtklonitiDo")
-                        .HasColumnType("date");
+                    b.HasKey("RadniNalogId", "KorisnikId");
 
-                    b.Property<string>("Potpis")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                    b.HasIndex("KorisnikId");
 
-                    b.Property<string>("Rfidopreme")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("RFIDOpreme");
-
-                    b.Property<string>("Status")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Stroj")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("StupanjHitnosti")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Sudjelovali")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Ustanovio")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("UtroseniMaterijal")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("VrstaNaloga")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("ZaOdjel")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.HasKey("Id")
-                        .HasName("PK__PrijavaK__3214EC273537315B");
-
-                    b.ToTable("PrijavaKvarova", (string)null);
+                    b.ToTable("RadniNalogSudionik");
                 });
 
             modelBuilder.Entity("backend.Models.Strojevi", b =>
@@ -371,29 +443,51 @@ namespace backend.Migrations
                     b.ToTable("Strojevi", (string)null);
                 });
 
-            modelBuilder.Entity("backend.Models.VrstaNaloga", b =>
+            modelBuilder.Entity("backend.Models.VanjskiIzvodaci", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("ID");
+                        .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("Aktivan")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
+                        .HasColumnType("bit");
 
-                    b.Property<string>("Naslov")
+                    b.Property<DateTime>("DatumKreiranja")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Dokumenti")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id")
-                        .HasName("PK__VrstaNal__3214EC2794902D78");
+                    b.Property<string>("ImeFirme")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.ToTable("VrstaNaloga", (string)null);
+                    b.Property<string>("KontaktEmail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("KontaktOsoba")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("KontaktTelefon")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OpisPoslova")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OpremaServisiraju")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("VanjskiIzvodaci");
                 });
 
             modelBuilder.Entity("backend.Models.ZaOdjel", b =>
@@ -419,6 +513,64 @@ namespace backend.Migrations
                         .HasName("PK__ZaOdjel__3214EC2712040936");
 
                     b.ToTable("ZaOdjel", (string)null);
+                });
+
+            modelBuilder.Entity("backend.Models.Zadaci", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Broj")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Datum")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Djelatnik")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ElePoz")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Napomena")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Odjel")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OpisRada")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProstorRada")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("SatiRada")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Smjena")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Stroj")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UgradeniDijelovi")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Zadaci");
                 });
 
             modelBuilder.Entity("Kalendar", b =>
@@ -449,6 +601,69 @@ namespace backend.Migrations
                     b.Navigation("Korisnik");
 
                     b.Navigation("Stroj");
+                });
+
+            modelBuilder.Entity("RadniNalog", b =>
+                {
+                    b.HasOne("backend.Models.Korisnici", "Dodijeljeno")
+                        .WithMany()
+                        .HasForeignKey("DodijeljenoId");
+
+                    b.HasOne("backend.Models.OdjelPrijave", "OdjelPrijave")
+                        .WithMany()
+                        .HasForeignKey("OdjelPrijaveId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Models.Korisnici", "Odradio")
+                        .WithMany()
+                        .HasForeignKey("OdradioId");
+
+                    b.HasOne("backend.Models.Strojevi", "Stroj")
+                        .WithMany()
+                        .HasForeignKey("StrojId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Models.Korisnici", "Ustanovio")
+                        .WithMany()
+                        .HasForeignKey("UstanovioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Dodijeljeno");
+
+                    b.Navigation("OdjelPrijave");
+
+                    b.Navigation("Odradio");
+
+                    b.Navigation("Stroj");
+
+                    b.Navigation("Ustanovio");
+                });
+
+            modelBuilder.Entity("backend.Models.RadniNalogSudionik", b =>
+                {
+                    b.HasOne("backend.Models.Korisnici", "Korisnik")
+                        .WithMany()
+                        .HasForeignKey("KorisnikId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("RadniNalog", "RadniNalog")
+                        .WithMany("Sudjelovali")
+                        .HasForeignKey("RadniNalogId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Korisnik");
+
+                    b.Navigation("RadniNalog");
+                });
+
+            modelBuilder.Entity("RadniNalog", b =>
+                {
+                    b.Navigation("Sudjelovali");
                 });
 #pragma warning restore 612, 618
         }

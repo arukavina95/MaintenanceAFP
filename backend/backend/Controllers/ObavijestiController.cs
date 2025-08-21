@@ -22,7 +22,7 @@ namespace backend.Controllers
         // GET: api/Obavijesti
         // Svi korisnici mogu vidjeti obavijesti
         [HttpGet]
-        [AllowAnonymous]
+        //[AllowAnonymous]
         public async Task<ActionResult<IEnumerable<Obavijesti>>> GetObavijesti()
         {
             if (_context.Obavijesti == null)
@@ -35,7 +35,7 @@ namespace backend.Controllers
         // GET: api/Obavijesti/{id}
         // Svi korisnici mogu vidjeti pojedinačnu obavijest
         [HttpGet("{id}")]
-        [AllowAnonymous]
+        //[AllowAnonymous]
         public async Task<ActionResult<Obavijesti>> GetObavijest(int id)
         {
             if (_context.Obavijesti == null)
@@ -56,7 +56,7 @@ namespace backend.Controllers
         // POST: api/Obavijesti
         // Samo administrator može dodavati obavijesti
         [HttpPost]
-        [Authorize(Roles = "Administrator")]
+        //[Authorize(Roles = "Administrator")]
         [Consumes("multipart/form-data")]
         public async Task<ActionResult<Obavijesti>> PostObavijest([FromForm] ObavijestiDto obavijestDto)
         {
@@ -91,7 +91,7 @@ namespace backend.Controllers
         // PUT: api/Obavijesti/{id}
         // Samo administrator može uređivati obavijesti
         [HttpPut("{id}")]
-        [Authorize(Roles = "Administrator")]
+        //[Authorize(Roles = "Administrator")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> PutObavijest(int id, [FromForm] ObavijestiDto obavijestDto)
         {
@@ -138,7 +138,7 @@ namespace backend.Controllers
         // DELETE: api/Obavijesti/{id}
         // Samo administrator može brisati obavijesti
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Administrator")]
+        //[Authorize(Roles = "Administrator")]
         public async Task<IActionResult> DeleteObavijest(int id)
         {
             if (_context.Obavijesti == null)

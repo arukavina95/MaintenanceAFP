@@ -12,10 +12,12 @@ namespace backend.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly UmagDbContext _context;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, UmagDbContext context)
         {
             _authService = authService;
+            _context = context;
         }
 
         [HttpPost("register")]
@@ -52,6 +54,34 @@ namespace backend.Controllers
                 return Unauthorized("Invalid credentials");
 
             return Ok(loginResult);
+        }
+
+        [HttpPost("rfid-login")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RfidLogin([FromBody] RfidLoginDto dto)
+        {
+            var user = await _context.Korisnici
+                .FirstOrDefaultAsync(k => k.BrojKartice == dto.BrojKartice && k.Aktivan);
+
+            if (user == null)
+                return Unauthorized("RFID card not recognized or user inactive.");
+
+            var userDto = new KorisniciDto
+            {
+                Id = user.Id,
+                Korisnik = user.Korisnik,
+                Ime = user.Ime,
+                RazinaPristupa = user.RazinaPristupa
+            };
+
+            // Generate JWT token for RFID login
+            var token = _authService.CreateToken(user);
+
+            return Ok(new LoginResponseDto
+            {
+                User = userDto,
+                Token = token
+            });
         }
     }
 }

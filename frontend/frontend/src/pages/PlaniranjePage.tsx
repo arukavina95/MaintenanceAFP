@@ -10,7 +10,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
   Tooltip,
   FormControl,
   InputLabel,
@@ -20,32 +19,32 @@ import {
   Dialog,
   DialogTitle,
   DialogActions,
+  Chip,
+  Card,
+  CardContent,
+  Alert,
+  CircularProgress,
 } from '@mui/material';
-import InfoIcon from '@mui/icons-material/Info';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import DeleteIcon from '@mui/icons-material/Delete';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import EngineeringIcon from '@mui/icons-material/Engineering';
 
 import 'react-calendar/dist/Calendar.css';
-import '../styles/calendar.css'; // Vaš custom CSS file
-import Header from '../components/Header';
+import '../styles/calendar.css';
 import { PlaniranjeFormModal } from '../components/PlaniranjeFormModal';
 import type { PlaniranjeTask } from '../services/planiranjeService';
 import { getMachineTitles, getPlaniranjeTasks, createPlaniranjeTask, deletePlaniranjeTask } from '../services/planiranjeService';
 import { format, setMonth, setYear, addMonths, subMonths } from 'date-fns';
 import { hr } from 'date-fns/locale';
+import { designTokens } from '../theme/designSystem';
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
 
-interface PlaniranjePageProps {
-  username: string;
-  razinaPristupa: number;
-  onLogout: () => void;
-}
-
-export const PlaniranjePage: React.FC<PlaniranjePageProps> = ({ username, razinaPristupa, onLogout }) => {
+export const PlaniranjePage: React.FC = () => {
   const [value, onChange] = useState<Value>(new Date());
   const [selectedDateEvents, setSelectedDateEvents] = useState<PlaniranjeTask[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -57,9 +56,13 @@ export const PlaniranjePage: React.FC<PlaniranjePageProps> = ({ username, razina
   const [filterStatus, setFilterStatus] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchEvents = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const events = await getPlaniranjeTasks();
       setAllEvents(events);
       if (value instanceof Date) {
@@ -72,6 +75,9 @@ export const PlaniranjePage: React.FC<PlaniranjePageProps> = ({ username, razina
       }
     } catch (error) {
       console.error('Error fetching planning tasks:', error);
+      setError('Greška pri dohvaćanju planiranih zadataka');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -138,7 +144,6 @@ export const PlaniranjePage: React.FC<PlaniranjePageProps> = ({ username, razina
       const currentMonth = currentDisplayDate.getMonth();
       const dateMonth = date.getMonth();
 
-      // Style for days outside the current month (gray background)
       if (dateMonth !== currentMonth) {
         return 'adjacent-month-day';
       }
@@ -146,18 +151,15 @@ export const PlaniranjePage: React.FC<PlaniranjePageProps> = ({ username, razina
       const hasEvent = allEvents.some(event => {
         const startDate = new Date(event.pocetniDatum);
         const endDate = new Date(event.zavrsniDatum);
-        // Check if the event spans across the current date
         return date >= startDate && date <= endDate;
       });
 
       let classes = [];
       if (hasEvent) {
-        classes.push('day-has-event'); // Use general event class
+        classes.push('day-has-event');
       }
-      // The specific date classes (event-22-may, selected-16-june) were removed in a previous step
-      // If you need specific styling for certain dates, consider adding a more robust system (e.g., metadata in events)
       if (value instanceof Date && date.toDateString() === value.toDateString()) {
-          classes.push('react-calendar__tile--active'); // default class for selected day
+          classes.push('react-calendar__tile--active');
       }
 
       return classes.join(' ');
@@ -183,8 +185,6 @@ export const PlaniranjePage: React.FC<PlaniranjePageProps> = ({ username, razina
     setCurrentDisplayDate(newDate);
     onChange(newDate);
   };
-
-
 
   const handleMonthChange = (event: { target: { value: unknown } }) => {
     const month = event.target.value as number;
@@ -249,126 +249,180 @@ export const PlaniranjePage: React.FC<PlaniranjePageProps> = ({ username, razina
     return true;
   });
 
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#f5f6fa' }}> {/* Overall light background */}
-      <Header username={username} razinaPristupa={razinaPristupa} onLogout={onLogout} />
-      {/* Main container for all content below the header: everything is stacked vertically */}
-      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', mt: '32px' }}>
-
-        {/* --- Top Control Section: Year/Month Select, Navigation, and ADD/RECORD button --- */}
-        <Box sx={{ width: '100%', maxWidth: '1200px', mb: 1, mt: 0 }}>
-          <Typography variant="h4" sx={{ fontWeight: 700, color: '#bb1e0f', mb: 0.5 }}>Planiranje</Typography>
-          <Typography variant="subtitle1" sx={{ color: '#555', mb: 2 }}>Pregled i upravljanje planiranim zadacima i događajima.</Typography>
-        </Box>
-
-        <Box sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
+  if (loading) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column',
           alignItems: 'center',
-          width: '100%',
-          maxWidth: '1200px',
-          mb: 3,
-          borderBottom: '1px solid #bb1e0f',
-          pb: 1,
-          gap: 2,
+          justifyContent: 'center', 
+          py: 12,
+          gap: 3
         }}>
-          {/* Left: Year/Month selects */}
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel shrink htmlFor="year-select">ODABIR GODINE</InputLabel>
-              <Select
-                value={currentDisplayDate.getFullYear()}
-                onChange={e => setCurrentDisplayDate(setYear(currentDisplayDate, Number(e.target.value)))}
-                label="ODABIR GODINE"
-                inputProps={{ id: 'year-select' }}
-              >
-                {years.map(year => (
-                  <MenuItem key={year} value={year}>{year}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel shrink htmlFor="month-select">ODABIR MJESECA</InputLabel>
-              <Select
-                value={currentDisplayDate.getMonth()}
-                onChange={handleMonthChange}
-                label="ODABIR MJESECA"
-                inputProps={{ id: 'month-select' }}
-              >
-                {months.map(month => (
-                  <MenuItem key={month.value} value={month.value}>{month.label}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel shrink htmlFor="machine-select">STROJ</InputLabel>
-              <Select
-                value={filterMachine}
-                onChange={e => setFilterMachine(e.target.value as string)}
-                label="STROJ"
-                inputProps={{ id: 'machine-select' }}
-              >
-                <MenuItem value="">Svi strojevi</MenuItem>
-                {machineTitles.map(title => (
-                  <MenuItem key={title} value={title}>{title}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel shrink htmlFor="status-select">STATUS</InputLabel>
-              <Select
-                value={filterStatus}
-                onChange={e => setFilterStatus(e.target.value as string)}
-                label="STATUS"
-                inputProps={{ id: 'status-select' }}
-              >
-                <MenuItem value="">Svi statusi</MenuItem>
-                <MenuItem value="Odrađeno">Odrađeno</MenuItem>
-                <MenuItem value="U tijeku">U tijeku</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-          {/* Center: Month/Year with icon and arrows */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <IconButton onClick={handlePrevMonth} size="small" sx={{ color: '#bb1e0f' }}><ArrowBackIosIcon fontSize="small" /></IconButton>
-            <EventNoteIcon sx={{ color: '#bb1e0f', mr: 0.5 }} />
-            <Typography variant="h6" sx={{ fontSize: '1.1em', fontWeight: 'bold', color: '#bb1e0f', mx: 1 }}>
-              {format(currentDisplayDate, 'MMMM yyyy', { locale: hr })}
-            </Typography>
-            <IconButton onClick={handleNextMonth} size="small" sx={{ color: '#bb1e0f' }}><ArrowForwardIosIcon fontSize="small" /></IconButton>
-          </Box>
-          {/* Right: Add button */}
+          <CircularProgress size={56} color="primary" />
+          <Typography variant="h6" color="neutral.600" fontWeight={500}>
+            Učitavanje planiranih zadataka...
+          </Typography>
+          <Typography variant="body2" color="neutral.500">
+            Molimo pričekajte
+          </Typography>
+        </Box>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center', 
+          py: 12,
+          gap: 3
+        }}>
+          <Alert 
+            severity="error" 
+            sx={{ 
+              borderRadius: designTokens.borderRadius.lg,
+              maxWidth: 500,
+              '& .MuiAlert-icon': {
+                fontSize: 28,
+              },
+              '& .MuiAlert-message': {
+                fontSize: 16,
+                fontWeight: 500,
+              }
+            }}
+          >
+            {error}
+          </Alert>
+        </Box>
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ p: 3 }}>
+      {/* Header */}
+      <Box display="flex" justifyContent="flex-end" alignItems="center" mb={4}>
+        <Box display="flex" gap={2}>
+          <Button
+            variant="outlined"
+            startIcon={<RefreshIcon />}
+            onClick={fetchEvents}
+            sx={{
+              borderRadius: designTokens.borderRadius.lg,
+              fontWeight: 600,
+            }}
+          >
+            Osvježi
+          </Button>
           <Button
             variant="contained"
-            onClick={handleOpenModal}
             startIcon={<EventNoteIcon />}
+            onClick={handleOpenModal}
             sx={{
-              backgroundColor: '#bb1e0f',
-              '&:hover': { backgroundColor: '#96180c' },
-              borderRadius: '6px',
-              px: 3,
-              py: 1.2,
-              fontWeight: 700,
-              fontSize: '1rem',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
+              borderRadius: designTokens.borderRadius.lg,
+              fontWeight: 600,
+              boxShadow: designTokens.shadows.md,
+              '&:hover': {
+                boxShadow: designTokens.shadows.lg,
+              },
             }}
           >
             Dodaj zapis
           </Button>
         </Box>
+      </Box>
 
-        {/* --- Calendar Section --- */}
-        <Box sx={{
-          border: '1px solid #e0e0e0', /* Subtle gray border */
-          borderRadius: '8px',
-          overflow: 'hidden',
-          width: '100%',
-          maxWidth: '1200px',
-          mb: 3,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.05)', /* Soft shadow */
-          backgroundColor: '#ffffff', /* White background for the card */
-          p: 2, /* Padding inside the card */
-        }}>
+      {/* Filters Card */}
+      <Card sx={{ mb: 3, borderRadius: designTokens.borderRadius.lg, boxShadow: designTokens.shadows.md }}>
+        <CardContent sx={{ p: 3 }}>
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+            <Typography variant="h6" fontWeight={600} color="neutral.800">
+              Filtri i navigacija
+            </Typography>
+            <Box display="flex" alignItems="center" gap={1}>
+              <IconButton onClick={handlePrevMonth} size="small" sx={{ color: 'primary.main' }}>
+                <ArrowBackIosIcon fontSize="small" />
+              </IconButton>
+              <Typography variant="h6" sx={{ fontSize: '1.1em', fontWeight: 'bold', color: 'primary.main', mx: 1 }}>
+                {format(currentDisplayDate, 'MMMM yyyy', { locale: hr })}
+              </Typography>
+              <IconButton onClick={handleNextMonth} size="small" sx={{ color: 'primary.main' }}>
+                <ArrowForwardIosIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          </Box>
+          
+          <Box display="flex" flexWrap="wrap" gap={2}>
+            <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', md: 'calc(25% - 12px)' } }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Godina</InputLabel>
+                <Select
+                  value={currentDisplayDate.getFullYear()}
+                  onChange={e => setCurrentDisplayDate(setYear(currentDisplayDate, Number(e.target.value)))}
+                  label="Godina"
+                >
+                  {years.map(year => (
+                    <MenuItem key={year} value={year}>{year}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+            <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', md: 'calc(25% - 12px)' } }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Mjesec</InputLabel>
+                <Select
+                  value={currentDisplayDate.getMonth()}
+                  onChange={handleMonthChange}
+                  label="Mjesec"
+                >
+                  {months.map(month => (
+                    <MenuItem key={month.value} value={month.value}>{month.label}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+            <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', md: 'calc(25% - 12px)' } }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Stroj</InputLabel>
+                <Select
+                  value={filterMachine}
+                  onChange={e => setFilterMachine(e.target.value as string)}
+                  label="Stroj"
+                >
+                  <MenuItem value="">Svi strojevi</MenuItem>
+                  {machineTitles.map(title => (
+                    <MenuItem key={title} value={title}>{title}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+            <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)', md: 'calc(25% - 12px)' } }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Status</InputLabel>
+                <Select
+                  value={filterStatus}
+                  onChange={e => setFilterStatus(e.target.value as string)}
+                  label="Status"
+                >
+                  <MenuItem value="">Svi statusi</MenuItem>
+                  <MenuItem value="Odrađeno">Odrađeno</MenuItem>
+                  <MenuItem value="U tijeku">U tijeku</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
+
+      {/* Calendar Card */}
+      <Card sx={{ mb: 3, borderRadius: designTokens.borderRadius.lg, boxShadow: designTokens.shadows.md, overflow: 'hidden' }}>
+        <CardContent sx={{ p: 3 }}>
           <Calendar
             onChange={handleDateChange}
             value={value}
@@ -397,111 +451,89 @@ export const PlaniranjePage: React.FC<PlaniranjePageProps> = ({ username, razina
             formatMonthYear={(_locale: string | undefined, date: Date) => format(date, 'MMMM yyyy', { locale: hr })}
             formatDay={(_locale: string | undefined, date: Date) => format(date, 'd')}
           />
-        </Box>
+        </CardContent>
+      </Card>
 
-        {/* --- Events Table Section (REFRESH button, Title, and Table) --- */}
-        <Box sx={{
-          width: '100%',
-          maxWidth: '1200px',
-          border: '1px solid #e0e0e0', /* Subtle gray border */
-          borderRadius: '8px',
-          overflow: 'hidden',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.05)', /* Soft shadow */
-          backgroundColor: '#ffffff', /* White background for the card */
-          mt: 0, /* No top margin needed, handled by calendar's mb */
+      {/* Events Table Card */}
+      <Card sx={{ borderRadius: designTokens.borderRadius.lg, boxShadow: designTokens.shadows.md, overflow: 'hidden' }}>
+        <Box sx={{ 
+          backgroundColor: 'primary.main', 
+          color: 'white',
+          p: 2,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2
         }}>
-          {/* Header for events table (new color background with REFRESH button) */}
-          <Box sx={{ display: 'flex', backgroundColor: '#bb1e0f', color: 'white' }}>
-            {/* REFRESH Button inside the block */}
-            <Button
-              variant="contained"
-              onClick={fetchEvents}
-              sx={{
-                backgroundColor: '#bb1e0f',
-                '&:hover': { backgroundColor: '#96180c' },
-                color: 'white',
-                minWidth: 'auto',
-                height: 'auto',
-                borderRadius: 0,
-                p: '10px 15px',
-                borderRight: '1px solid white',
-                fontWeight: 'bold',
-                flexShrink: 0
-              }}
-            >
-              OSVJEŽI
-            </Button>
-            {/* "Events for selected date" text */}
-            <Typography variant="h6" sx={{ flexGrow: 1, p: 1, fontSize: '1rem', display: 'flex', alignItems: 'center' }}>
-              Događaji za odabrani datum: {value instanceof Date ? value.toLocaleDateString('hr-HR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Nema odabranog datuma'}
-            </Typography>
-          </Box>
-
-          {/* Main Table Header (JOB TYPE, START DATE etc.) */}
-          <TableContainer component={Paper} sx={{ flexGrow: 1, mt: 0, boxShadow: 'none', borderRadius: 0 }}>
-            <Table size="small">
-              <TableHead sx={{ backgroundColor: '#222' }}>
-                <TableRow>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold', fontSize: '0.95rem', padding: '10px 15px' }}>VRSTA POSLA</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold', fontSize: '0.95rem', padding: '10px 15px' }}>POČETNI DATUM</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold', fontSize: '0.95rem', padding: '10px 15px' }}>ZAVRŠNI DATUM</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold', fontSize: '0.95rem', padding: '10px 15px' }}>STROJ</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold', fontSize: '0.95rem', padding: '10px 15px' }}>OPIS</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold', fontSize: '0.95rem', padding: '10px 15px' }}>DJELATNIK</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold', display: 'flex', alignItems: 'center', fontSize: '0.95rem', padding: '10px 15px' }}>
-                    STATUS
-                    <Tooltip title="Status informacije">
-                      <InfoIcon sx={{ color: 'white', ml: 0.5, fontSize: '1rem' }} />
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold', fontSize: '0.95rem', padding: '10px 15px', textAlign: 'center' }}>AKCIJE</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredEvents.length > 0 ? (
-                  filteredEvents.map((event, index) => (
-                    <Tooltip key={event.id} title="Dvoklik za uređivanje" arrow placement="top">
-                      <TableRow
-                        onDoubleClick={() => handleRowDoubleClick(event)}
-                        sx={{
-                          cursor: 'pointer',
-                          '&:hover': { backgroundColor: '#f0f0f0' },
-                          backgroundColor: index % 2 === 0 ? '#fff' : '#f7fafd',
-                          borderBottom: '1px solid #e9ecef',
-                          '&:last-child': { borderBottom: 'none' },
-                          transition: 'background 0.2s',
-                        }}
-                      >
-                        <TableCell sx={{ fontSize: '0.92rem', padding: '10px 15px', borderBottom: 'none' }}>{event.vrstaZadataka}</TableCell>
-                        <TableCell sx={{ fontSize: '0.92rem', padding: '10px 15px', borderBottom: 'none' }}>{new Date(event.pocetniDatum).toLocaleDateString('hr-HR')}</TableCell>
-                        <TableCell sx={{ fontSize: '0.92rem', padding: '10px 15px', borderBottom: 'none' }}>{new Date(event.zavrsniDatum).toLocaleDateString('hr-HR')}</TableCell>
-                        <TableCell sx={{ fontSize: '0.92rem', padding: '10px 15px', borderBottom: 'none' }}>{event.strojNaslov}</TableCell>
-                        <TableCell sx={{ fontSize: '0.92rem', padding: '10px 15px', borderBottom: 'none' }}>{event.opis}</TableCell>
-                        <TableCell sx={{ fontSize: '0.92rem', padding: '10px 15px', borderBottom: 'none' }}>{event.korisnikIme}</TableCell>
-                        <TableCell sx={{ fontSize: '0.92rem', padding: '10px 15px', borderBottom: 'none' }}>{event.status}</TableCell>
-                        <TableCell sx={{ textAlign: 'center', borderBottom: 'none' }}>
-                          <IconButton size="small" color="primary" onClick={() => { setSelectedTask(event); setIsModalOpen(true); }}>
-                            <EventNoteIcon />
-                          </IconButton>
-                          <IconButton size="small" color="secondary" onClick={() => handleOpenDeleteDialog(event.id)} sx={{ color: '#bb1e0f', '&:hover': { color: '#96180c' } }}>
-                            <DeleteIcon />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    </Tooltip>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={8} sx={{ textAlign: 'center', fontSize: '0.95rem', padding: '10px 15px', borderBottom: 'none' }}>
-                      Nema događaja za ovaj datum.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          <EngineeringIcon />
+          <Typography variant="h6" fontWeight={600}>
+            Događaji za odabrani datum: {value instanceof Date ? value.toLocaleDateString('hr-HR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Nema odabranog datuma'}
+          </Typography>
         </Box>
-      </Box>
+
+        <TableContainer>
+          <Table size="small">
+            <TableHead sx={{ backgroundColor: 'neutral.100' }}>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem' }}>Vrsta posla</TableCell>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem' }}>Početni datum</TableCell>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem' }}>Završni datum</TableCell>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem' }}>Stroj</TableCell>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem' }}>Opis</TableCell>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem' }}>Djelatnik</TableCell>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem' }}>Status</TableCell>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem', textAlign: 'center' }}>Akcije</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredEvents.length > 0 ? (
+                filteredEvents.map((event, index) => (
+                  <Tooltip key={event.id} title="Dvoklik za uređivanje" arrow placement="top">
+                    <TableRow
+                      onDoubleClick={() => handleRowDoubleClick(event)}
+                      sx={{
+                        cursor: 'pointer',
+                        '&:hover': { backgroundColor: 'neutral.50' },
+                        backgroundColor: index % 2 === 0 ? 'white' : 'neutral.50',
+                        transition: 'background 0.2s',
+                      }}
+                    >
+                      <TableCell sx={{ fontSize: '0.92rem' }}>{event.vrstaZadataka}</TableCell>
+                      <TableCell sx={{ fontSize: '0.92rem' }}>{new Date(event.pocetniDatum).toLocaleDateString('hr-HR')}</TableCell>
+                      <TableCell sx={{ fontSize: '0.92rem' }}>{new Date(event.zavrsniDatum).toLocaleDateString('hr-HR')}</TableCell>
+                      <TableCell sx={{ fontSize: '0.92rem' }}>{event.strojNaslov}</TableCell>
+                      <TableCell sx={{ fontSize: '0.92rem' }}>{event.opis}</TableCell>
+                      <TableCell sx={{ fontSize: '0.92rem' }}>{event.korisnikIme}</TableCell>
+                      <TableCell>
+                        <Chip 
+                          label={event.status} 
+                          size="small"
+                          color={event.status === 'Odrađeno' ? 'success' : 'warning'}
+                          sx={{ fontWeight: 600 }}
+                        />
+                      </TableCell>
+                      <TableCell sx={{ textAlign: 'center' }}>
+                        <IconButton size="small" color="primary" onClick={() => { setSelectedTask(event); setIsModalOpen(true); }}>
+                          <EventNoteIcon />
+                        </IconButton>
+                        <IconButton size="small" color="error" onClick={() => handleOpenDeleteDialog(event.id)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  </Tooltip>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={8} sx={{ textAlign: 'center', fontSize: '0.95rem', py: 4 }}>
+                    Nema događaja za ovaj datum.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Card>
+
       <PlaniranjeFormModal
         open={isModalOpen}
         onClose={handleCloseModal}
@@ -509,9 +541,15 @@ export const PlaniranjePage: React.FC<PlaniranjePageProps> = ({ username, razina
         onDelete={handleDeleteTask}
         initialData={selectedTask}
       />
+      
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: designTokens.borderRadius.lg,
+          }
+        }}
       >
         <DialogTitle>Jeste li sigurni da želite obrisati ovaj zapis?</DialogTitle>
         <DialogActions>

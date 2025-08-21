@@ -1,6 +1,30 @@
 import React, { useState } from 'react';
-import { Box, Typography, Button, TextField, Table, TableBody, TableCell, TableHead, TableRow, IconButton, Paper, FormControlLabel, Checkbox, Select, MenuItem, FormControl, InputLabel, TableContainer } from '@mui/material';
-import Grid from '@mui/material/Grid';
+import { 
+  Box, 
+  Typography, 
+  Button, 
+  TextField, 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableRow, 
+  IconButton, 
+  FormControlLabel, 
+  Checkbox, 
+  Select, 
+  MenuItem, 
+  FormControl, 
+  InputLabel, 
+  TableContainer,
+  Card,
+  CardContent,
+  Chip,
+  Alert,
+  CircularProgress,
+  Tabs,
+  Tab
+} from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -13,21 +37,18 @@ import KorisniciService, { type User } from '../services/KorisniciService';
 import EditIcon from '@mui/icons-material/Edit';
 import type { Department } from '../services/OdjeliPrijave';
 import DepartmentService from '../services/OdjeliPrijave';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
+import authService from '../services/authService';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import GroupIcon from '@mui/icons-material/Group';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
+import RefreshIcon from '@mui/icons-material/Refresh';
+
 import axios from "axios";
 import LoginPage from '../pages/LoginPage';
-
-
+import { designTokens } from '../theme/designSystem';
 
 interface AdminPageProps {
   userType?: number;
@@ -36,8 +57,6 @@ interface AdminPageProps {
   onLogout?: () => void;
   user?: any;
 }
-
-
 
 const AdminPage: React.FC<AdminPageProps> = ({ user }) => {
   const [notifications, setNotifications] = useState<Obavijest[]>([]);
@@ -72,6 +91,8 @@ const AdminPage: React.FC<AdminPageProps> = ({ user }) => {
   const [openKorisnikModal, setOpenKorisnikModal] = useState(false);
   const [editedNotificationId, setEditedNotificationId] = useState<number | null>(null);
   const [editedUserId, setEditedUserId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   React.useEffect(() => {
     fetchNotifications();
@@ -81,10 +102,15 @@ const AdminPage: React.FC<AdminPageProps> = ({ user }) => {
 
   const fetchNotifications = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const data = await ObavijestiService.getObavijesti();
       setNotifications(data);
     } catch (error) {
       console.error('Error fetching notifications:', error);
+      setError('Greška pri dohvaćanju obavijesti');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -218,7 +244,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ user }) => {
     try {
       if (!editedUserId) {
         const userToSave = {
-          username: userFormFields.korisnik, // OVO JE KLJUČNO!
+          username: userFormFields.korisnik,
           ime: userFormFields.ime,
           razinaPristupa: userFormFields.razinaPristupa,
           aktivan: userFormFields.aktivan,
@@ -238,7 +264,6 @@ const AdminPage: React.FC<AdminPageProps> = ({ user }) => {
           id: editedUserId ?? 0,
         };
         await KorisniciService.updateUser(editedUserId, userToSave);
-        // Ako je unesena nova lozinka, promijeni je
         if (password && password === confirmPassword) {
           await KorisniciService.changeUserPassword(editedUserId, password);
         }
@@ -266,7 +291,6 @@ const AdminPage: React.FC<AdminPageProps> = ({ user }) => {
   };
 
   const handleUserEdit = (user: User) => {
-    // Provjeri je li odjel iz baze u listi departmenta
     const validOdjel = departments.some(d => d.naslov === user.odjel) ? user.odjel : '';
     setUserFormFields({
       ...user,
@@ -282,12 +306,55 @@ const AdminPage: React.FC<AdminPageProps> = ({ user }) => {
 
   const handleUserDelete = async (id: number | null) => {
     if (id === null) return;
-    if (!window.confirm('Jeste li sigurni da želite obrisati?')) return;
+    
+    // Provjeri da li se pokušava obrisati trenutno prijavljen korisnik
+    const currentUser = authService.getCurrentUser();
+    if (currentUser && currentUser.id === id) {
+      alert('Ne možete obrisati sami sebe!');
+      return;
+    }
+    
+    // Pronađi korisnika koji se pokušava obrisati
+    const userToDelete = users.find(u => u.id === id);
+    if (!userToDelete) {
+      alert('Korisnik nije pronađen!');
+      return;
+    }
+    
+    // Potvrda brisanja
+    const confirmDelete = window.confirm(
+      `Sigurno želite obrisati korisnika "${userToDelete.ime}"?\n\n` +
+      `Ova akcija je nepovratna!`
+    );
+    
+    if (!confirmDelete) return;
+    
     try {
+      console.log(`Attempting to delete user with id: ${id}`);
       await KorisniciService.deleteUser(id);
+      console.log('User deleted successfully');
       fetchUsers();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting user:', error);
+      
+      // Prikaži korisniku detaljniju poruku o grešci
+      let errorMessage = 'Greška pri brisanju korisnika.';
+      
+      if (error.response) {
+        if (error.response.status === 500) {
+          errorMessage = 'Server greška - korisnik se koristi u drugim tablicama (radni nalozi, zadaci, itd.).\n\n' +
+                        'Molimo prvo uklonite sve reference na ovog korisnika.';
+        } else if (error.response.status === 404) {
+          errorMessage = 'Korisnik nije pronađen.';
+        } else if (error.response.status === 403) {
+          errorMessage = 'Nemate dozvolu za brisanje korisnika.';
+        } else if (error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+      }
+      
+      // Prikaži alert korisniku
+      alert(errorMessage);
     }
   };
 
@@ -330,585 +397,542 @@ const AdminPage: React.FC<AdminPageProps> = ({ user }) => {
     return <LoginPage onLogin={() => window.location.reload()} />;
   }
 
-  return (
-    <Box sx={{ display: 'flex', minHeight: '80vh', mt: 4, mb: 4, maxWidth: 1400, mx: 'auto', px: 2 }}>
-      {/* Sidebar navigation */}
-      <Box sx={{ width: 220, mr: 4, bgcolor: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.07)', p: 2, height: 'fit-content' }}>
-        <List>
-          <ListItem disablePadding>
-            <ListItemButton selected={tabValue === 0} onClick={() => setTabValue(0)}
-              sx={{
-                bgcolor: tabValue === 0 ? '#e3f0fc' : 'transparent',
-                color: tabValue === 0 ? '#1976d2' : '#555',
-                '& .MuiListItemIcon-root': { color: tabValue === 0 ? '#1976d2' : '#888' },
-                '& .MuiListItemText-primary': {
-                  color: tabValue === 0 ? '#1976d2' : '#555',
-                  fontWeight: tabValue === 0 ? 700 : 400,
-                },
-              }}
-            >
-              <ListItemIcon><NotificationsIcon /></ListItemIcon>
-              <ListItemText primary="Obavijesti" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton selected={tabValue === 1} onClick={() => setTabValue(1)}
-              sx={{
-                bgcolor: tabValue === 1 ? '#e3f0fc' : 'transparent',
-                color: tabValue === 1 ? '#1976d2' : '#555',
-                '& .MuiListItemIcon-root': { color: tabValue === 1 ? '#1976d2' : '#888' },
-                '& .MuiListItemText-primary': {
-                  color: tabValue === 1 ? '#1976d2' : '#555',
-                  fontWeight: tabValue === 1 ? 700 : 400,
-                },
-              }}
-            >
-              <ListItemIcon><GroupIcon /></ListItemIcon>
-              <ListItemText primary="Korisnici" />
-            </ListItemButton>
-          </ListItem>
-        </List>
+  if (loading) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center', 
+          py: 12,
+          gap: 3
+        }}>
+          <CircularProgress size={56} color="primary" />
+          <Typography variant="h6" color="neutral.600" fontWeight={500}>
+            Učitavanje podataka...
+          </Typography>
+          <Typography variant="body2" color="neutral.500">
+            Molimo pričekajte
+          </Typography>
+        </Box>
       </Box>
-      {/* Main content */}
-      <Box sx={{ flexGrow: 1 }}>
-    
-        {/* OBAVIJESTI TAB */}
-        <Box hidden={tabValue !== 0} sx={{ width: '100%' }}>
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleOpenObavijestModal}
-              startIcon={<NotificationsIcon />}
-              sx={{
-                backgroundColor: '#bb1e0f',
-                '&:hover': { backgroundColor: '#96180c' },
-                borderRadius: 2,
-                px: 3,
-                py: 1.2,
-                fontWeight: 700,
-                fontSize: '1rem',
-                color: 'white',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
-              }}
-            >
-              Dodaj obavijest
-            </Button>
-          </Box>
-          <Dialog open={openObavijestModal} onClose={handleCloseObavijestModal} maxWidth="sm" fullWidth>
-            <DialogTitle>Dodaj / Uredi obavijest</DialogTitle>
-            <DialogContent>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
-                <Box sx={{ width: { xs: '100%', sm: 'calc(66.666667% - 8px)' } }}>
-                  <TextField
-                    label="Naslov"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    name="imeObavijesti"
-                    value={imeObavijesti}
-                    onChange={handleNotificationInputChange}
-                    InputLabelProps={{ style: { color: '#222' } }}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        '& fieldset': { borderColor: '#222' },
-                        '&:hover fieldset': { borderColor: '#222' },
-                        '&.Mui-focused fieldset': { borderColor: '#222' }
-                      },
-                      input: { color: '#222' }
-                    }}
-                  />
-                </Box>
-                <Box sx={{ width: { xs: '100%', sm: 'calc(33.333333% - 8px)' } }}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={aktivno}
-                        onChange={handleNotificationInputChange}
-                        name="aktivno"
-                        sx={{ color: '#222', '&.Mui-checked': { color: '#222' } }}
-                      />
-                    }
-                    label={<span style={{ color: '#222' }}>Aktivno</span>}
-                    sx={{ color: '#222' }}
-                  />
-                </Box>
-                <Box sx={{ width: '100%' }}>
-                  <TextField
-                    label="Sadržaj"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    multiline
-                    rows={4}
-                    name="opis"
-                    value={opis}
-                    onChange={handleNotificationInputChange}
-                    InputLabelProps={{ style: { color: '#222' } }}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        '& fieldset': { borderColor: '#222' },
-                        '&:hover fieldset': { borderColor: '#222' },
-                        '&.Mui-focused fieldset': { borderColor: '#222' }
-                      },
-                      input: { color: '#222' }
-                    }}
-                  />
-                </Box>
-                <Box sx={{ width: '100%' }}>
-                  <Button
-                    variant="outlined"
-                    component="label"
-                    sx={{ color: '#222', borderColor: '#222', '&:hover': { borderColor: '#111', color: '#111' } }}
-                  >
-                    Dodaj sliku
-                    <input
-                      type="file"
-                      accept="image/*"
-                      hidden
-                      onChange={handleNotificationImageChange}
-                    />
-                  </Button>
-                  {slika && (
-                    <Typography variant="body2" sx={{ color: '#222' }}>
-                      Odabrana slika: {typeof slika === 'string' ? slika : slika.name}
-                    </Typography>
-                  )}
-                </Box>
-                <Box sx={{ width: '100%' }}>
-                  <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={hr}>
-                    <DatePicker
-                      label="Datum objave"
-                      value={datumObjave ? new Date(datumObjave) : null}
-                      onChange={(newValue: Date | null) => {
-                        setDatumObjave(newValue ? format(newValue, 'yyyy-MM-dd') : '');
-                      }}
-                      slotProps={{
-                        textField: {
-                          size: 'small',
-                          fullWidth: true,
-                          InputLabelProps: { style: { color: '#222' } },
-                          sx: {
-                            '& .MuiOutlinedInput-root': {
-                              '& fieldset': { borderColor: '#222' },
-                              '&:hover fieldset': { borderColor: '#222' },
-                              '&.Mui-focused fieldset': { borderColor: '#222' }
-                            },
-                            input: { color: '#222' }
-                          }
-                        },
-                      }}
-                    />
-                  </LocalizationProvider>
-                </Box>
-              </Box>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseObavijestModal} color="secondary">Odustani</Button>
-              <Button onClick={async () => { await handleSaveNotification(); handleCloseObavijestModal(); }} color="primary" variant="contained">Spremi</Button>
-            </DialogActions>
-          </Dialog>
-          {/* @ts-ignore */}
-          <Grid component="div" sx={{ width: { xs: '100%', md: '100%' } }}>
-            <Paper elevation={3} sx={{
-              p: 3, display: 'flex', flexDirection: 'column', height: '100%',
-              transition: 'transform 0.3s ease-in-out',
-              '&:hover': { transform: 'translateY(-5px)' },
-              border: '1px solid #bb1e0f',
-            }}>
-              <Typography variant="h5" gutterBottom sx={{ color: '#bb1e0f', mb: 2 }}>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center', 
+          py: 12,
+          gap: 3
+        }}>
+          <Alert 
+            severity="error" 
+            sx={{ 
+              borderRadius: designTokens.borderRadius.lg,
+              maxWidth: 500,
+              '& .MuiAlert-icon': {
+                fontSize: 28,
+              },
+              '& .MuiAlert-message': {
+                fontSize: 16,
+                fontWeight: 500,
+              }
+            }}
+          >
+            {error}
+          </Alert>
+        </Box>
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ p: 3 }}>
+      {/* Header */}
+      <Box display="flex" justifyContent="flex-end" alignItems="center" mb={4}>
+        <Box display="flex" gap={2}>
+          <Button
+            variant="outlined"
+            startIcon={<RefreshIcon />}
+            onClick={fetchNotifications}
+            sx={{
+              borderRadius: designTokens.borderRadius.lg,
+              fontWeight: 600,
+            }}
+          >
+            Osvježi
+          </Button>
+        </Box>
+      </Box>
+
+      {/* Tabs */}
+      <Card sx={{ mb: 3, borderRadius: designTokens.borderRadius.lg, boxShadow: designTokens.shadows.md }}>
+        <Tabs 
+          value={tabValue} 
+          onChange={(e, newValue) => setTabValue(newValue as number)}
+          sx={{
+            '& .MuiTab-root': {
+              textTransform: 'none',
+              fontWeight: 600,
+              fontSize: '1rem',
+            },
+            '& .Mui-selected': {
+              color: 'primary.main',
+            },
+          }}
+        >
+          <Tab 
+            icon={<NotificationsIcon />} 
+            label="Obavijesti" 
+            iconPosition="start"
+          />
+          <Tab 
+            icon={<GroupIcon />} 
+            label="Korisnici" 
+            iconPosition="start"
+          />
+        </Tabs>
+      </Card>
+
+      {/* OBAVIJESTI TAB */}
+      <Box hidden={tabValue !== 0}>
+        <Card sx={{ mb: 3, borderRadius: designTokens.borderRadius.lg, boxShadow: designTokens.shadows.md }}>
+          <CardContent sx={{ p: 3 }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+              <Typography variant="h6" fontWeight={600} color="neutral.800">
                 Obavijesti
               </Typography>
-              <TableContainer>
-                <Table size="small">
-                <TableHead>
-                    <TableRow sx={{ bgcolor: '#bb1e0f' }}>
-                      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Naslov</TableCell>
-                      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Opis</TableCell>
-                      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Datum objave</TableCell>
-                      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Aktivno</TableCell>
-                      <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>Akcije</TableCell>
+              <Button
+                variant="contained"
+                startIcon={<NotificationsIcon />}
+                onClick={handleOpenObavijestModal}
+                sx={{
+                  borderRadius: designTokens.borderRadius.lg,
+                  fontWeight: 600,
+                  boxShadow: designTokens.shadows.md,
+                  '&:hover': {
+                    boxShadow: designTokens.shadows.lg,
+                  },
+                }}
+              >
+                Dodaj obavijest
+              </Button>
+            </Box>
+
+            <TableContainer>
+              <Table size="small">
+                <TableHead sx={{ backgroundColor: 'neutral.100' }}>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem' }}>Naslov</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem' }}>Opis</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem' }}>Datum objave</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem' }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem', textAlign: 'center' }}>Akcije</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                    {notifications.map((notification) => (
-                      <TableRow
-                        key={notification.id}
-                        sx={{
-                          '&:last-child td, &:last-child th': { border: 0 },
-                          '&:hover': { backgroundColor: '#ffebee' },
-                        }}
-                      >
-                        <TableCell sx={{ color: '#222' }}>{notification.imeObavijesti}</TableCell>
-                        <TableCell sx={{ color: '#222' }}>{notification.opis}</TableCell>
-                        <TableCell sx={{ color: '#222' }}>{notification.datumObjave ? new Date(notification.datumObjave).toLocaleDateString('hr-HR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''}</TableCell>
-                        <TableCell sx={{ color: '#222' }}>{notification.aktivno ? 'Da' : 'Ne'}</TableCell>
-                        <TableCell align="right" sx={{ color: '#222' }}>
-                          <IconButton
-                            color="primary"
-                            onClick={() => handleEditNotification(notification)}
-                            sx={{ color: '#1976d2', '&:hover': { color: '#115293' } }}
-                          >
-                            <EditIcon />
-                            </IconButton>
-                          <IconButton
-                            color="secondary"
-                            onClick={() => handleDeleteNotification(notification.id)}
-                            sx={{ color: '#bb1e0f', '&:hover': { color: '#96180c' } }}
-                          >
-                            <DeleteIcon />
-                            </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                  {notifications.map((notification) => (
+                    <TableRow
+                      key={notification.id}
+                      sx={{
+                        '&:hover': { backgroundColor: 'neutral.50' },
+                        transition: 'background 0.2s',
+                      }}
+                    >
+                      <TableCell sx={{ color: 'neutral.700' }}>{notification.imeObavijesti}</TableCell>
+                      <TableCell sx={{ color: 'neutral.700' }}>{notification.opis}</TableCell>
+                      <TableCell sx={{ color: 'neutral.700' }}>
+                        {notification.datumObjave ? new Date(notification.datumObjave).toLocaleDateString('hr-HR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''}
+                      </TableCell>
+                      <TableCell>
+                        <Chip 
+                          label={notification.aktivno ? 'Aktivno' : 'Neaktivno'} 
+                          size="small"
+                          color={notification.aktivno ? 'success' : 'default'}
+                          sx={{ fontWeight: 600 }}
+                        />
+                      </TableCell>
+                      <TableCell sx={{ textAlign: 'center' }}>
+                        <IconButton
+                          color="primary"
+                          onClick={() => handleEditNotification(notification)}
+                          size="small"
+                        >
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton
+                          color="error"
+                          onClick={() => handleDeleteNotification(notification.id)}
+                          size="small"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
-              </TableContainer>
-            </Paper>
-          </Grid>
-        </Box>
-        {/* KORISNICI TAB */}
-        <Box hidden={tabValue !== 1} sx={{ width: '100%' }}>
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleOpenKorisnikModal}
-              startIcon={<GroupIcon />}
-              sx={{
-                backgroundColor: '#bb1e0f',
-                '&:hover': { backgroundColor: '#96180c' },
-                borderRadius: 2,
-                px: 3,
-                py: 1.2,
-                fontWeight: 700,
-                fontSize: '1rem',
-                color: 'white',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
-              }}
-            >
-              Dodaj korisnika
-            </Button>
-          </Box>
-          <Dialog open={openKorisnikModal} onClose={handleCloseKorisnikModal} maxWidth="sm" fullWidth>
-            <DialogTitle>Dodaj / Uredi korisnika</DialogTitle>
-            <DialogContent>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
-                <TextField
-                  label="Korisničko ime"
-                  variant="outlined"
-                  size="small"
-                  name="korisnik"
-                  value={userFormFields.korisnik}
-                  onChange={handleUserInputChange}
-                    InputLabelProps={{ style: { color: '#bb1e0f' } }}
-                    sx={{
-                      flex: '1 1 calc(33% - 16px)',
-                      '& .MuiOutlinedInput-root': {
-                        '& fieldset': { borderColor: '#bb1e0f' },
-                        '&:hover fieldset': { borderColor: '#bb1e0f' },
-                        '&.Mui-focused fieldset': { borderColor: '#bb1e0f' }
-                      },
-                      input: { color: '#bb1e0f' }
-                    }}
-                />
-                <TextField
-                  label="Ime i prezime"
-                  variant="outlined"
-                  size="small"
-                  name="ime"
-                  value={userFormFields.ime}
-                  onChange={handleUserInputChange}
-                    InputLabelProps={{ style: { color: '#bb1e0f' } }}
-                    sx={{
-                      flex: '1 1 calc(33% - 16px)',
-                      '& .MuiOutlinedInput-root': {
-                        '& fieldset': { borderColor: '#bb1e0f' },
-                        '&:hover fieldset': { borderColor: '#bb1e0f' },
-                        '&.Mui-focused fieldset': { borderColor: '#bb1e0f' }},
-                        input: { color: '#bb1e0f' }
-                      }}
-                  />
-                 
-                <TextField
-                  label="Broj kartice"
-                  variant="outlined"
-                  size="small"
-                  name="brojKartice"
-                  value={userFormFields.brojKartice}
-                  onChange={handleUserInputChange}
-                    InputLabelProps={{ style: { color: '#bb1e0f' } }}
-                    sx={{
-                      flex: '1 1 calc(33% - 16px)',
-                      '& .MuiOutlinedInput-root': {
-                        '& fieldset': { borderColor: '#bb1e0f' },
-                        '&:hover fieldset': { borderColor: '#bb1e0f' },
-                        '&.Mui-focused fieldset': { borderColor: '#bb1e0f' }
-                      },
-                      input: { color: '#bb1e0f' }
-                    }}
-                />
-                <TextField
-                  label="Potpis"
-                  variant="outlined"
-                  size="small"
-                  name="potpis"
-                  value={userFormFields.potpis}
-                  onChange={handleUserInputChange}
-                    InputLabelProps={{ style: { color: '#bb1e0f' } }}
-                    sx={{
-                      flex: '1 1 calc(33% - 16px)',
-                      '& .MuiOutlinedInput-root': {
-                        '& fieldset': { borderColor: '#bb1e0f' },
-                        '&:hover fieldset': { borderColor: '#bb1e0f' },
-                        '&.Mui-focused fieldset': { borderColor: '#bb1e0f' }
-                      },
-                      input: { color: '#bb1e0f' }
-                    }}
-                />
-                <FormControl sx={{ flex: '1 1 calc(33% - 16px)' }} size="small">
-                    <InputLabel id="odjel-label" htmlFor="odjel" sx={{ color: '#bb1e0f' }}>Odjel</InputLabel>
-                  <Select
-                    labelId="odjel-label"
-                    id="odjel"
-                    name="odjel"
-                    value={userFormFields.odjel || ''}
-                    label="Odjel"
-                    onChange={(event: SelectChangeEvent<string>) => handleUserInputChange({ target: { name: 'odjel', value: event.target.value, type: 'text' } } as React.ChangeEvent<HTMLInputElement>)}
-                      sx={{
-                        '& .MuiOutlinedInput-notchedOutline': { borderColor: '#bb1e0f' },
-                        '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#bb1e0f' },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#bb1e0f' },
-                        '.MuiSelect-icon': { color: '#bb1e0f' },
-                        color: '#bb1e0f'
-                      }}
-                  >
-                    <MenuItem value="">Nijedan</MenuItem>
-                    {departments.map((dept) => (
-                      <MenuItem key={dept.id} value={dept.naslov}>
-                        {dept.naslov}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={hr}>
-                  <DatePicker
-                    label="Datum rođenja"
-                    value={userFormFields.datumRodenja ? new Date(userFormFields.datumRodenja) : null}
-                    onChange={(newValue: Date | null) => {
-                      setUserFormFields({
-                        ...userFormFields,
-                        datumRodenja: newValue ? format(newValue, 'yyyy-MM-dd') : ''
-                      });
-                    }}
-                    slotProps={{
-                      textField: {
-                        size: 'small',
-                        fullWidth: true,
-                          InputLabelProps: { style: { color: '#bb1e0f' } },
-                          sx: {
-                            flex: '1 1 calc(33% - 16px)',
-                            '& .MuiOutlinedInput-root': {
-                              '& fieldset': { borderColor: '#bb1e0f' },
-                              '&:hover fieldset': { borderColor: '#bb1e0f' },
-                              '&.Mui-focused fieldset': { borderColor: '#bb1e0f' }
-                            },
-                            input: { color: '#bb1e0f' }
-                          }
-                      },
-                    }}
-                  />
-                </LocalizationProvider>
-                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={hr}>
-                  <DatePicker
-                    label="Zaposlen od"
-                    value={userFormFields.zaposlenOd ? new Date(userFormFields.zaposlenOd) : null}
-                    onChange={(newValue: Date | null) => {
-                      setUserFormFields({
-                        ...userFormFields,
-                        zaposlenOd: newValue ? format(newValue, 'yyyy-MM-dd') : ''
-                      });
-                    }}
-                    slotProps={{
-                      textField: {
-                        size: 'small',
-                        fullWidth: true,
-                          InputLabelProps: { style: { color: '#bb1e0f' } },
-                          sx: {
-                            flex: '1 1 calc(33% - 16px)',
-                            '& .MuiOutlinedInput-root': {
-                              '& fieldset': { borderColor: '#bb1e0f' },
-                              '&:hover fieldset': { borderColor: '#bb1e0f' },
-                              '&.Mui-focused fieldset': { borderColor: '#bb1e0f' }
-                            },
-                            input: { color: '#bb1e0f' }
-                          }
-                      },
-                    }}
-                  />
-                </LocalizationProvider>
-                <TextField
-                  label="Ukupno dana GO"
-                  variant="outlined"
-                  size="small"
-                  name="ukupnoDanaGo"
-                  type="number"
-                  value={userFormFields.ukupnoDanaGo}
-                  onChange={handleUserInputChange}
-                    InputLabelProps={{ style: { color: '#bb1e0f' } }}
-                    sx={{
-                      flex: '1 1 calc(33% - 16px)',
-                      '& .MuiOutlinedInput-root': {
-                        '& fieldset': { borderColor: '#bb1e0f' },
-                        '&:hover fieldset': { borderColor: '#bb1e0f' },
-                        '&.Mui-focused fieldset': { borderColor: '#bb1e0f' }
-                      },
-                      input: { color: '#bb1e0f' }
-                    }}
-                />
-                <TextField
-                  label="Ukupno dana starog GO"
-                  variant="outlined"
-                  size="small"
-                  name="ukupnoDanaStarogGo"
-                  type="number"
-                  value={userFormFields.ukupnoDanaStarogGo}
-                  onChange={handleUserInputChange}
-                    InputLabelProps={{ style: { color: '#bb1e0f' } }}
-                    sx={{
-                      flex: '1 1 calc(33% - 16px)',
-                      '& .MuiOutlinedInput-root': {
-                        '& fieldset': { borderColor: '#bb1e0f' },
-                        '&:hover fieldset': { borderColor: '#bb1e0f' },
-                        '&.Mui-focused fieldset': { borderColor: '#bb1e0f' }
-                      },
-                      input: { color: '#bb1e0f' }
-                    }}
-                />
-                <FormControl fullWidth size="small" sx={{ flex: '1 1 calc(33% - 16px)' }}>
-                    <InputLabel sx={{ color: '#bb1e0f' }}>Razina pristupa</InputLabel>
-                  <Select
-                    name="razinaPristupa"
-                    value={userFormFields.razinaPristupa}
-                    onChange={handleUserSelectChange}
-                    label="Razina pristupa"
-                      sx={{
-                        '& .MuiOutlinedInput-notchedOutline': { borderColor: '#bb1e0f' },
-                        '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#bb1e0f' },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#bb1e0f' },
-                        '.MuiSelect-icon': { color: '#bb1e0f' },
-                        color: '#bb1e0f'
-                      }}
-                  >
-                    <MenuItem value={1}>Administrator</MenuItem>
-                    <MenuItem value={2}>Korisnik</MenuItem>
-                  </Select>
-                </FormControl>
-                <TextField
-                  label="Lozinka"
-                  variant="outlined"
-                  size="small"
-                  type="password"
-                    value={password}
-                    onChange={handlePasswordChange}
-                    InputLabelProps={{ style: { color: '#bb1e0f' } }}
-                    sx={{
-                      flex: '1 1 calc(33% - 16px)',
-                      '& .MuiOutlinedInput-root': {
-                        '& fieldset': { borderColor: '#bb1e0f' },
-                        '&:hover fieldset': { borderColor: '#bb1e0f' },
-                        '&.Mui-focused fieldset': { borderColor: '#bb1e0f' }
-                      },
-                      input: { color: '#bb1e0f' }
-                    }}
-                />
-                <TextField
-                    label="Potvrdi lozinku"
-                  variant="outlined"
-                  size="small"
-                  type="password"
-                    value={confirmPassword}
-                    onChange={handleConfirmPasswordChange}
-                    InputLabelProps={{ style: { color: '#bb1e0f' } }}
-                    sx={{
-                      flex: '1 1 calc(33% - 16px)',
-                      '& .MuiOutlinedInput-root': {
-                        '& fieldset': { borderColor: '#bb1e0f' },
-                        '&:hover fieldset': { borderColor: '#bb1e0f' },
-                        '&.Mui-focused fieldset': { borderColor: '#bb1e0f' }
-                      },
-                      input: { color: '#bb1e0f' }
-                    }}
-                />
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={userFormFields.aktivan}
-                      onChange={handleUserInputChange}
-                      name="aktivan"
-                        sx={{ color: '#bb1e0f', '&.Mui-checked': { color: '#bb1e0f' } }}
-                    />
-                  }
-                  label="Aktivan"
-                    sx={{ color: '#bb1e0f' }}
-                />
-              </Box>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseKorisnikModal} color="secondary">Odustani</Button>
-              <Button onClick={async () => { await handleSaveUser(); handleCloseKorisnikModal(); }} color="primary" variant="contained">Spremi</Button>
-            </DialogActions>
-          </Dialog>
-          {/* @ts-ignore */}
-          <Grid component="div" sx={{ width: { xs: '100%', md: '100%' } }}>
-            <Paper elevation={3} sx={{
-              p: 3, display: 'flex', flexDirection: 'column', height: '100%',
-              transition: 'transform 0.3s ease-in-out',
-              '&:hover': { transform: 'translateY(-5px)' },
-              border: '1px solid #bb1e0f',
-            }}>
-              <Typography variant="h5" gutterBottom sx={{ color: '#bb1e0f', mb: 2 }}>
+            </TableContainer>
+          </CardContent>
+        </Card>
+      </Box>
+
+      {/* KORISNICI TAB */}
+      <Box hidden={tabValue !== 1}>
+        <Card sx={{ mb: 3, borderRadius: designTokens.borderRadius.lg, boxShadow: designTokens.shadows.md }}>
+          <CardContent sx={{ p: 3 }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+              <Typography variant="h6" fontWeight={600} color="neutral.800">
                 Korisnici
               </Typography>
-              <TableContainer>
+              <Button
+                variant="contained"
+                startIcon={<GroupIcon />}
+                onClick={handleOpenKorisnikModal}
+                sx={{
+                  borderRadius: designTokens.borderRadius.lg,
+                  fontWeight: 600,
+                  boxShadow: designTokens.shadows.md,
+                  '&:hover': {
+                    boxShadow: designTokens.shadows.lg,
+                  },
+                }}
+              >
+                Dodaj korisnika
+              </Button>
+            </Box>
+
+            <TableContainer>
               <Table size="small">
-                <TableHead>
-                    <TableRow sx={{ bgcolor: '#bb1e0f' }}>
-                    
-                      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Korisničko ime</TableCell>
-                      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Ime i prezime</TableCell>
-                      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Broj kartice</TableCell>
-                      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Potpis</TableCell>
-                      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Odjel</TableCell>
-                      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Razina pristupa</TableCell>
-                      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Aktivan</TableCell>
-                      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Akcije</TableCell>
+                <TableHead sx={{ backgroundColor: 'neutral.100' }}>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem' }}>Korisničko ime</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem' }}>Ime i prezime</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem' }}>Broj kartice</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem' }}>Potpis</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem' }}>Odjel</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem' }}>Razina pristupa</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem' }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.95rem', textAlign: 'center' }}>Akcije</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                    {users.map((user: User) => (
-                      <TableRow key={user.id} sx={{ '&:hover': { bgcolor: '#f5f5f5' } }}>
-                   
-                        <TableCell>{user.korisnik}</TableCell>
-                        <TableCell>{user.ime}</TableCell>
-                        <TableCell>{user.brojKartice}</TableCell>
-                        <TableCell>{user.potpis}</TableCell>
-                        <TableCell>{user.odjel}</TableCell>
-                        <TableCell>{user.razinaPristupa === 1 ? 'Administrator' : 'Korisnik'}</TableCell>
-                        <TableCell>{user.aktivan ? 'Da' : 'Ne'}</TableCell>
-                        <TableCell>
-                          <IconButton color="primary" onClick={() => handleUserEdit(user)} size="small" sx={{ color: '#1976d2', '&:hover': { color: '#115293' } }}><EditIcon fontSize="small" /></IconButton>
-                          <IconButton color="secondary" onClick={() => handleUserDelete(user.id)} size="small" sx={{ color: '#bb1e0f', '&:hover': { color: '#96180c' } }}><DeleteIcon fontSize="small" /></IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                  {users.map((user: User) => (
+                    <TableRow 
+                      key={user.id} 
+                      sx={{ 
+                        '&:hover': { backgroundColor: 'neutral.50' },
+                        transition: 'background 0.2s',
+                      }}
+                    >
+                      <TableCell sx={{ color: 'neutral.700' }}>{user.korisnik}</TableCell>
+                      <TableCell sx={{ color: 'neutral.700' }}>{user.ime}</TableCell>
+                      <TableCell sx={{ color: 'neutral.700' }}>{user.brojKartice}</TableCell>
+                      <TableCell sx={{ color: 'neutral.700' }}>{user.potpis}</TableCell>
+                      <TableCell sx={{ color: 'neutral.700' }}>{user.odjel}</TableCell>
+                      <TableCell>
+                        <Chip 
+                          label={user.razinaPristupa === 1 ? 'Administrator' : 'Korisnik'} 
+                          size="small"
+                          color={user.razinaPristupa === 1 ? 'error' : 'primary'}
+                          sx={{ fontWeight: 600 }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Chip 
+                          label={user.aktivan ? 'Aktivan' : 'Neaktivan'} 
+                          size="small"
+                          color={user.aktivan ? 'success' : 'default'}
+                          sx={{ fontWeight: 600 }}
+                        />
+                      </TableCell>
+                      <TableCell sx={{ textAlign: 'center' }}>
+                        <IconButton 
+                          color="primary" 
+                          onClick={() => handleUserEdit(user)} 
+                          size="small"
+                        >
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton 
+                          color="error" 
+                          onClick={() => handleUserDelete(user.id)} 
+                          size="small"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
-              </TableContainer>
-            </Paper>
-          </Grid>
-        </Box>
+            </TableContainer>
+          </CardContent>
+        </Card>
       </Box>
+
+      {/* Modals */}
+      <Dialog 
+        open={openObavijestModal} 
+        onClose={handleCloseObavijestModal} 
+        maxWidth="sm" 
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: designTokens.borderRadius.lg,
+          }
+        }}
+      >
+        <DialogTitle>Dodaj / Uredi obavijest</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3, mt: 1 }}>
+            <TextField
+              label="Naslov"
+              variant="outlined"
+              size="small"
+              fullWidth
+              name="imeObavijesti"
+              value={imeObavijesti}
+              onChange={handleNotificationInputChange}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={aktivno}
+                  onChange={handleNotificationInputChange}
+                  name="aktivno"
+                />
+              }
+              label="Aktivno"
+            />
+            <TextField
+              label="Sadržaj"
+              variant="outlined"
+              size="small"
+              fullWidth
+              multiline
+              rows={4}
+              name="opis"
+              value={opis}
+              onChange={handleNotificationInputChange}
+            />
+            <Button
+              variant="outlined"
+              component="label"
+            >
+              Dodaj sliku
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={handleNotificationImageChange}
+              />
+            </Button>
+            {slika && (
+              <Typography variant="body2" color="neutral.600">
+                Odabrana slika: {typeof slika === 'string' ? slika : slika.name}
+              </Typography>
+            )}
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={hr}>
+              <DatePicker
+                label="Datum objave"
+                value={datumObjave ? new Date(datumObjave) : null}
+                onChange={(newValue: Date | null) => {
+                  setDatumObjave(newValue ? format(newValue, 'yyyy-MM-dd') : '');
+                }}
+                slotProps={{
+                  textField: {
+                    size: 'small',
+                    fullWidth: true,
+                  },
+                }}
+              />
+            </LocalizationProvider>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseObavijestModal} color="secondary">Odustani</Button>
+          <Button onClick={async () => { await handleSaveNotification(); handleCloseObavijestModal(); }} color="primary" variant="contained">Spremi</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog 
+        open={openKorisnikModal} 
+        onClose={handleCloseKorisnikModal} 
+        maxWidth="sm" 
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: designTokens.borderRadius.lg,
+          }
+        }}
+      >
+        <DialogTitle>Dodaj / Uredi korisnika</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3, mt: 1 }}>
+            <TextField
+              label="Korisničko ime"
+              variant="outlined"
+              size="small"
+              name="korisnik"
+              value={userFormFields.korisnik}
+              onChange={handleUserInputChange}
+              sx={{ flex: '1 1 calc(50% - 8px)' }}
+            />
+            <TextField
+              label="Ime i prezime"
+              variant="outlined"
+              size="small"
+              name="ime"
+              value={userFormFields.ime}
+              onChange={handleUserInputChange}
+              sx={{ flex: '1 1 calc(50% - 8px)' }}
+            />
+            <TextField
+              label="Broj kartice"
+              variant="outlined"
+              size="small"
+              name="brojKartice"
+              value={userFormFields.brojKartice}
+              onChange={handleUserInputChange}
+              sx={{ flex: '1 1 calc(50% - 8px)' }}
+            />
+            <TextField
+              label="Potpis"
+              variant="outlined"
+              size="small"
+              name="potpis"
+              value={userFormFields.potpis}
+              onChange={handleUserInputChange}
+              sx={{ flex: '1 1 calc(50% - 8px)' }}
+            />
+            <FormControl sx={{ flex: '1 1 calc(50% - 8px)' }} size="small">
+              <InputLabel>Odjel</InputLabel>
+              <Select
+                name="odjel"
+                value={userFormFields.odjel || ''}
+                label="Odjel"
+                onChange={(event: SelectChangeEvent<string>) => handleUserInputChange({ target: { name: 'odjel', value: event.target.value, type: 'text' } } as React.ChangeEvent<HTMLInputElement>)}
+              >
+                <MenuItem value="">Nijedan</MenuItem>
+                {departments.map((dept) => (
+                  <MenuItem key={dept.id} value={dept.naslov}>
+                    {dept.naslov}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl sx={{ flex: '1 1 calc(50% - 8px)' }} size="small">
+              <InputLabel>Razina pristupa</InputLabel>
+              <Select
+                name="razinaPristupa"
+                value={userFormFields.razinaPristupa}
+                onChange={handleUserSelectChange}
+                label="Razina pristupa"
+              >
+                <MenuItem value={1}>Administrator</MenuItem>
+                <MenuItem value={2}>Korisnik</MenuItem>
+              </Select>
+            </FormControl>
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={hr}>
+              <DatePicker
+                label="Datum rođenja"
+                value={userFormFields.datumRodenja ? new Date(userFormFields.datumRodenja) : null}
+                onChange={(newValue: Date | null) => {
+                  setUserFormFields({
+                    ...userFormFields,
+                    datumRodenja: newValue ? format(newValue, 'yyyy-MM-dd') : ''
+                  });
+                }}
+                slotProps={{
+                  textField: {
+                    size: 'small',
+                    fullWidth: true,
+                    sx: { flex: '1 1 calc(50% - 8px)' }
+                  },
+                }}
+              />
+            </LocalizationProvider>
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={hr}>
+              <DatePicker
+                label="Zaposlen od"
+                value={userFormFields.zaposlenOd ? new Date(userFormFields.zaposlenOd) : null}
+                onChange={(newValue: Date | null) => {
+                  setUserFormFields({
+                    ...userFormFields,
+                    zaposlenOd: newValue ? format(newValue, 'yyyy-MM-dd') : ''
+                  });
+                }}
+                slotProps={{
+                  textField: {
+                    size: 'small',
+                    fullWidth: true,
+                    sx: { flex: '1 1 calc(50% - 8px)' }
+                  },
+                }}
+              />
+            </LocalizationProvider>
+            <TextField
+              label="Ukupno dana GO"
+              variant="outlined"
+              size="small"
+              name="ukupnoDanaGo"
+              type="number"
+              value={userFormFields.ukupnoDanaGo}
+              onChange={handleUserInputChange}
+              sx={{ flex: '1 1 calc(50% - 8px)' }}
+            />
+            <TextField
+              label="Ukupno dana starog GO"
+              variant="outlined"
+              size="small"
+              name="ukupnoDanaStarogGo"
+              type="number"
+              value={userFormFields.ukupnoDanaStarogGo}
+              onChange={handleUserInputChange}
+              sx={{ flex: '1 1 calc(50% - 8px)' }}
+            />
+            <TextField
+              label="Lozinka"
+              variant="outlined"
+              size="small"
+              type="password"
+              value={password}
+              onChange={handlePasswordChange}
+              sx={{ flex: '1 1 calc(50% - 8px)' }}
+            />
+            <TextField
+              label="Potvrdi lozinku"
+              variant="outlined"
+              size="small"
+              type="password"
+              value={confirmPassword}
+              onChange={handleConfirmPasswordChange}
+              sx={{ flex: '1 1 calc(50% - 8px)' }}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={userFormFields.aktivan}
+                  onChange={handleUserInputChange}
+                  name="aktivan"
+                />
+              }
+              label="Aktivan"
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseKorisnikModal} color="secondary">Odustani</Button>
+          <Button onClick={async () => { await handleSaveUser(); handleCloseKorisnikModal(); }} color="primary" variant="contained">Spremi</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

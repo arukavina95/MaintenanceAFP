@@ -9,5 +9,7 @@ namespace backend.Services
     {
         Task<LoginResponseDto> Login(Login loginDto); // Ispravljen tip parametra
         Task<Korisnici> Register(Registracija registerDto); // Ispravljen tip parametra
+
+        string CreateToken(Korisnici user); // Add this line for JWT token generation
     }
 }

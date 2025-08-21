@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace backend.Models;
 
@@ -19,12 +20,10 @@ public partial class UmagDbContext : DbContext
 
     public virtual DbSet<OdjelPrijave> OdjelPrijave { get; set; }
 
-    public virtual DbSet<PrijavaKvarova> PrijavaKvarova { get; set; }
 
     public virtual DbSet<Strojevi> Strojevi { get; set; }
 
-    public virtual DbSet<VrstaNaloga> VrstaNaloga { get; set; }
-
+ 
     public virtual DbSet<ZaOdjel> ZaOdjel { get; set; }
 
     public virtual DbSet<Obavijesti> Obavijesti { get; set; } 
@@ -32,6 +31,14 @@ public partial class UmagDbContext : DbContext
     public virtual DbSet<Planiranje> Planiranja { get; set; }
 
     public virtual DbSet<Kalendar> Kalendari { get; set; }
+
+    public virtual DbSet<RadniNalog> RadniNalozi { get; set; }
+
+    public virtual DbSet<Zadaci> Zadaci { get; set; }
+
+    public DbSet<Izvodaci> Izvodaci { get; set; }
+
+    public DbSet<VanjskiIzvodaci> VanjskiIzvodaci { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)   
         => optionsBuilder.UseSqlServer("Server=Rukavina\\SQLEXPRESS;Database=UMAG_db;User Id=antun;Password=antun;TrustServerCertificate=True");
@@ -80,35 +87,7 @@ public partial class UmagDbContext : DbContext
             entity.Property(e => e.Naslov).HasMaxLength(255);
         });
 
-        modelBuilder.Entity<PrijavaKvarova>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__PrijavaK__3214EC273537315B");
-
-            entity.ToTable("PrijavaKvarova");
-
-            entity.Property(e => e.Id).HasColumnName("ID");
-            entity.Property(e => e.BrojRn)
-                .HasMaxLength(50)
-                .HasColumnName("BrojRN");
-            entity.Property(e => e.BrojTehnoloskaOznaka).HasMaxLength(255);
-            entity.Property(e => e.DatumVrijemeDodjele).HasColumnType("datetime");
-            entity.Property(e => e.DatumVrijemePreuzimanja).HasColumnType("datetime");
-            entity.Property(e => e.DodijeljenoDjelatniku).HasMaxLength(255);
-            entity.Property(e => e.Naslov).HasMaxLength(255);
-            entity.Property(e => e.ObrazlozenjePp).HasColumnName("ObrazlozenjePP");
-            entity.Property(e => e.OdjelPrijave).HasMaxLength(255);
-            entity.Property(e => e.Potpis).HasMaxLength(255);
-            entity.Property(e => e.Rfidopreme)
-                .HasMaxLength(255)
-                .HasColumnName("RFIDOpreme");
-            entity.Property(e => e.Status).HasMaxLength(50);
-            entity.Property(e => e.Stroj).HasMaxLength(255);
-            entity.Property(e => e.StupanjHitnosti).HasMaxLength(50);
-            entity.Property(e => e.Ustanovio).HasMaxLength(255);
-            entity.Property(e => e.VrstaNaloga).HasMaxLength(100);
-            entity.Property(e => e.ZaOdjel).HasMaxLength(255);
-        });
-
+   
         modelBuilder.Entity<Strojevi>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Strojevi__3214EC27E3AC053A");
@@ -123,17 +102,6 @@ public partial class UmagDbContext : DbContext
             entity.Property(e => e.UpogonuOd).HasColumnName("UPogonuOd");
         });
 
-        modelBuilder.Entity<VrstaNaloga>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__VrstaNal__3214EC2794902D78");
-
-            entity.ToTable("VrstaNaloga");
-
-            entity.Property(e => e.Id).HasColumnName("ID");
-            entity.Property(e => e.Aktivan).HasDefaultValue(true);
-            entity.Property(e => e.Naslov).HasMaxLength(255);
-        });
-
         modelBuilder.Entity<ZaOdjel>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__ZaOdjel__3214EC2712040936");
@@ -144,6 +112,22 @@ public partial class UmagDbContext : DbContext
             entity.Property(e => e.Aktivan).HasDefaultValue(true);
             entity.Property(e => e.Naslov).HasMaxLength(255);
         });
+
+        modelBuilder.Entity<RadniNalogSudionik>()
+      .HasKey(x => new { x.RadniNalogId, x.KorisnikId });
+
+        modelBuilder.Entity<RadniNalogSudionik>()
+            .HasOne(x => x.RadniNalog)
+            .WithMany(x => x.Sudjelovali)
+            .HasForeignKey(x => x.RadniNalogId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<RadniNalogSudionik>()
+            .HasOne(x => x.Korisnik)
+            .WithMany()
+            .HasForeignKey(x => x.KorisnikId)
+            .OnDelete(DeleteBehavior.Restrict);
+
 
         OnModelCreatingPartial(modelBuilder);
     }

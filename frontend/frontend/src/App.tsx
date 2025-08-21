@@ -2,14 +2,28 @@ import {  useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import ObavijestiPage from './pages/ObavijestiPage';
-import Header from './components/Header';
 import AdminPage from './pages/AdminPage';
-import { Box } from '@mui/material';
 import authService from './services/authService';
 import { PlaniranjePage } from './pages/PlaniranjePage';
 import KalendarPage from './pages/Kalendar';
+import RadniNaloziPage from './pages/RadniNaloziPage';
+import ZadaciEvPage from './pages/ZadaciEvPage';
+import IzvodaciPage from './pages/IzvodaciPage';
+import { Layout } from './components/Layout';
+import { Dashboard } from './components/Dashboard';
+import ErrorBoundary from './components/ErrorBoundary';
 
-
+// Komponenta za zaštitu ruta
+const ProtectedRoute: React.FC<{ 
+  element: React.ReactElement; 
+  adminOnly?: boolean; 
+  user: any; 
+}> = ({ element, adminOnly = false, user }) => {
+  if (adminOnly && user?.razinaPristupa !== 1) {
+    return <Navigate to="/obavijesti" replace />;
+  }
+  return element;
+};
 
 function App() {
   const [user, setUser] = useState<any>(null);
@@ -17,10 +31,10 @@ function App() {
 
   useEffect(() => {
     const userObj = authService.getCurrentUser();
-if (userObj) {
-  setUser(userObj);
-  setIsLoggedIn(true);
-}
+    if (userObj) {
+      setUser(userObj);
+      setIsLoggedIn(true);
+    }
   }, []);
 
   const handleLogin = (userObj: any) => {
@@ -42,25 +56,26 @@ if (userObj) {
 
   return (
     <Router>
-      {isLoggedIn && (
-        <Header username={user?.korisnik || ''} razinaPristupa={user?.razinaPristupa} onLogout={handleLogout} />
-      )}
-      <Box component="main" sx={{ mt: '64px' }}>
-        <Routes>
-          {!isLoggedIn ? (
-            <Route path="*" element={<LoginPage onLogin={handleLogin} />} />
-          ) : (
-            <>
-              <Route path="/news" element={<ObavijestiPage username={user?.korisnik || ''} razinaPristupa={user?.razinaPristupa} onLogout={handleLogout} />} />
-              <Route path="/admin" element={<AdminPage user={user} username={user?.korisnik || ''} onLogout={handleLogout} />} />
-              <Route path="/planiranje" element={<PlaniranjePage username={user?.korisnik || ''} razinaPristupa={user?.razinaPristupa} onLogout={handleLogout}/>} />
+      {!isLoggedIn ? (
+        <LoginPage onLogin={handleLogin} />
+      ) : (
+        <Layout>
+          <ErrorBoundary>
+            <Routes>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/obavijesti" element={<ObavijestiPage />} />
+              <Route path="/admin" element={<ProtectedRoute element={<AdminPage user={user} />} adminOnly={true} user={user} />} />
+              <Route path="/planiranje" element={<PlaniranjePage />} />
               <Route path="/kalendar" element={<KalendarPage  />} />
-              <Route path="/" element={<Navigate to="/news" />} />
-              <Route path="*" element={<Navigate to="/news" />} />
-            </>
-          )}
-        </Routes>
-      </Box>
+              <Route path="/radni-nalozi" element={<RadniNaloziPage />} />
+              <Route path="/zadaci-ev" element={<ZadaciEvPage />} />
+              <Route path="/vanjski-izvodaci" element={<IzvodaciPage />} />
+              <Route path="/" element={<Navigate to="/obavijesti" />} />
+              <Route path="*" element={<Navigate to="/obavijesti" />} />
+            </Routes>
+          </ErrorBoundary>
+        </Layout>
+      )}
     </Router>
   );
 }

@@ -45,6 +45,15 @@ const KalendarFormModal: React.FC<KalendarFormModalProps> = ({ open, onClose, on
   const [privitak, setPrivitak] = useState<File | null>(null);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  
+  // Helper funkcija za helper text
+  const getHelperText = (field: string) => {
+    if (errors[field]) return errors[field];
+    if (razlog !== "GodisnjiOdmor") {
+      return "Vikendi su onemogućeni (osim za rodendane)";
+    }
+    return "";
+  };
 
   useEffect(() => {
     getRazloziIzostanka()
@@ -81,6 +90,43 @@ const KalendarFormModal: React.FC<KalendarFormModalProps> = ({ open, onClose, on
     if (!razlog) newErrors.razlog = "Obavezno";
     if (!pocetniDatum) newErrors.pocetniDatum = "Obavezno";
     if (!zavrsniDatum) newErrors.zavrsniDatum = "Obavezno";
+    
+    // Provjeri da li je početni datum prije završnog
+    if (pocetniDatum && zavrsniDatum) {
+      const pocetniDate = new Date(pocetniDatum);
+      const zavrsniDate = new Date(zavrsniDatum);
+      
+      if (pocetniDate > zavrsniDate) {
+        newErrors.zavrsniDatum = "Završni datum mora biti nakon početnog datuma";
+        setErrors(newErrors);
+        return false; // Zaustavi validaciju ako je datum neispravan
+      }
+    }
+    
+    // Provjeri da li se pokušava upisati vikend za tipove koji nisu rodendani
+    if (pocetniDatum && zavrsniDatum && razlog !== "GodisnjiOdmor") {
+      const pocetniDate = new Date(pocetniDatum);
+      const zavrsniDate = new Date(zavrsniDatum);
+      
+      // Provjeri sve datume u rasponu
+      const currentDate = new Date(pocetniDate);
+      let hasWeekend = false;
+      
+      while (currentDate <= zavrsniDate) {
+        const dan = currentDate.getDay();
+        if (dan === 0 || dan === 6) {
+          hasWeekend = true;
+          break;
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      
+      if (hasWeekend) {
+        newErrors.pocetniDatum = "Ne možete upisati izostanak koji uključuje subotu ili nedjelju (osim rodendana)";
+        newErrors.zavrsniDatum = "Ne možete upisati izostanak koji uključuje subotu ili nedjelju (osim rodendana)";
+      }
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -118,7 +164,53 @@ const KalendarFormModal: React.FC<KalendarFormModalProps> = ({ open, onClose, on
                       select
                       label="Vrsta izostanka"
                       value={razlog}
-                      onChange={e => setRazlog(e.target.value)}
+                      onChange={e => {
+                        setRazlog(e.target.value);
+                        // Resetiraj greške za datume kada se promijeni razlog
+                        if (e.target.value === "GodisnjiOdmor") {
+                          setErrors(prev => ({ ...prev, pocetniDatum: "", zavrsniDatum: "" }));
+                        } else {
+                          // Validiraj postojeće datume kada se promijeni na ne-rodendan
+                          if (pocetniDatum && zavrsniDatum) {
+                            const pocetniDate = new Date(pocetniDatum);
+                            const zavrsniDate = new Date(zavrsniDatum);
+                            
+                            // Provjeri da li je početni datum prije završnog
+                            if (pocetniDate > zavrsniDate) {
+                              setErrors(prev => ({ 
+                                ...prev, 
+                                zavrsniDatum: "Završni datum mora biti nakon početnog datuma"
+                              }));
+                            } else {
+                              const currentDate = new Date(pocetniDate);
+                              let hasWeekend = false;
+                              
+                              while (currentDate <= zavrsniDate) {
+                                const dan = currentDate.getDay();
+                                if (dan === 0 || dan === 6) {
+                                  hasWeekend = true;
+                                  break;
+                                }
+                                currentDate.setDate(currentDate.getDate() + 1);
+                              }
+                              
+                              if (hasWeekend) {
+                                setErrors(prev => ({ 
+                                  ...prev, 
+                                  pocetniDatum: "Ne možete upisati izostanak koji uključuje subotu ili nedjelju (osim rodendana)",
+                                  zavrsniDatum: "Ne možete upisati izostanak koji uključuje subotu ili nedjelju (osim rodendana)"
+                                }));
+                              } else {
+                                setErrors(prev => ({ 
+                                  ...prev, 
+                                  pocetniDatum: "",
+                                  zavrsniDatum: ""
+                                }));
+                              }
+                            }
+                          }
+                        }
+                      }}
                       error={!!errors.razlog}
                       helperText={errors.razlog}
                       fullWidth
@@ -134,17 +226,57 @@ const KalendarFormModal: React.FC<KalendarFormModalProps> = ({ open, onClose, on
                 <DatePicker
                   label="Početni datum"
                   value={pocetniDatum ? new Date(pocetniDatum) : null}
-                  onChange={date => setPocetniDatum(date ? format(date, 'yyyy-MM-dd') : '')}
+                  onChange={date => {
+                    const newDate = date ? format(date, 'yyyy-MM-dd') : '';
+                    setPocetniDatum(newDate);
+                                         // Validiraj datume kada se promijene
+                     if (newDate && zavrsniDatum) {
+                       const pocetniDate = new Date(newDate);
+                       const zavrsniDate = new Date(zavrsniDatum);
+                       
+                       // Provjeri da li je početni datum prije završnog
+                       if (pocetniDate > zavrsniDate) {
+                         setErrors(prev => ({ ...prev, zavrsniDatum: "Završni datum mora biti nakon početnog datuma" }));
+                       } else {
+                         setErrors(prev => ({ ...prev, zavrsniDatum: "" }));
+                       }
+                       
+                                               // Provjeri vikende samo ako nije rodendan
+                        if (razlog !== "GodisnjiOdmor") {
+                          const currentDate = new Date(pocetniDate);
+                          let hasWeekend = false;
+                          
+                          while (currentDate <= zavrsniDate) {
+                            const dan = currentDate.getDay();
+                            if (dan === 0 || dan === 6) {
+                              hasWeekend = true;
+                              break;
+                            }
+                            currentDate.setDate(currentDate.getDate() + 1);
+                          }
+                          
+                          if (hasWeekend) {
+                            setErrors(prev => ({ ...prev, pocetniDatum: "Ne možete upisati izostanak koji uključuje subotu ili nedjelju (osim rodendana)" }));
+                          } else {
+                            setErrors(prev => ({ ...prev, pocetniDatum: "" }));
+                          }
+                        }
+                      }
+                  }}
                   format="dd.MM.yyyy"
                   shouldDisableDate={date => {
                     const day = date.getDay();
-                    return day === 0 || day === 6;
+                    // Dozvoli rodendane (GodisnjiOdmor) subotom i nedjeljom
+                    if (razlog === "GodisnjiOdmor") {
+                      return false; // Dozvoli sve datume za rodendane
+                    }
+                    return day === 0 || day === 6; // Blokiraj vikende za ostale tipove
                   }}
                   slotProps={{
                     textField: {
                       fullWidth: true,
                       error: !!errors.pocetniDatum,
-                      helperText: errors.pocetniDatum,
+                      helperText: getHelperText('pocetniDatum'),
                       size: 'medium',
                       InputLabelProps: { sx: { fontWeight: 600 } },
                       placeholder: 'Odaberi datum'
@@ -156,17 +288,57 @@ const KalendarFormModal: React.FC<KalendarFormModalProps> = ({ open, onClose, on
                 <DatePicker
                   label="Završni datum"
                   value={zavrsniDatum ? new Date(zavrsniDatum) : null}
-                  onChange={date => setZavrsniDatum(date ? format(date, 'yyyy-MM-dd') : '')}
+                  onChange={date => {
+                    const newDate = date ? format(date, 'yyyy-MM-dd') : '';
+                    setZavrsniDatum(newDate);
+                    // Validiraj datume kada se promijene
+                    if (pocetniDatum && newDate) {
+                      const pocetniDate = new Date(pocetniDatum);
+                      const zavrsniDate = new Date(newDate);
+                      
+                      // Provjeri da li je početni datum prije završnog
+                      if (pocetniDate > zavrsniDate) {
+                        setErrors(prev => ({ ...prev, zavrsniDatum: "Završni datum mora biti nakon početnog datuma" }));
+                      } else {
+                        setErrors(prev => ({ ...prev, zavrsniDatum: "" }));
+                      }
+                      
+                      // Provjeri vikende samo ako nije rodendan
+                      if (razlog !== "GodisnjiOdmor") {
+                        const currentDate = new Date(pocetniDate);
+                        let hasWeekend = false;
+                        
+                        while (currentDate <= zavrsniDate) {
+                          const dan = currentDate.getDay();
+                          if (dan === 0 || dan === 6) {
+                            hasWeekend = true;
+                            break;
+                          }
+                          currentDate.setDate(currentDate.getDate() + 1);
+                        }
+                        
+                        if (hasWeekend) {
+                          setErrors(prev => ({ ...prev, zavrsniDatum: "Ne možete upisati izostanak koji uključuje subotu ili nedjelju (osim rodendana)" }));
+                        } else {
+                          setErrors(prev => ({ ...prev, zavrsniDatum: "" }));
+                        }
+                      }
+                    }
+                  }}
                   format="dd.MM.yyyy"
                   shouldDisableDate={date => {
                     const day = date.getDay();
-                    return day === 0 || day === 6;
+                    // Dozvoli rodendane (GodisnjiOdmor) subotom i nedjeljom
+                    if (razlog === "GodisnjiOdmor") {
+                      return false; // Dozvoli sve datume za rodendane
+                    }
+                    return day === 0 || day === 6; // Blokiraj vikende za ostale tipove
                   }}
                   slotProps={{
                     textField: {
                       fullWidth: true,
                       error: !!errors.zavrsniDatum,
-                      helperText: errors.zavrsniDatum,
+                      helperText: getHelperText('zavrsniDatum'),
                       size: 'medium',
                       InputLabelProps: { sx: { fontWeight: 600 } },
                       placeholder: 'Odaberi datum'
